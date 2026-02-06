@@ -23,7 +23,7 @@ export default async function handler(request, response) {
     
     const genAI = new GoogleGenerativeAI(apiKey);
     // نستخدم الموديل السريع
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+    const model = genAI.getGenerativeModel({ model: "gemini-pro" });
 
     const result = await model.generateContent(prompt);
     const apiResponse = await result.response;
