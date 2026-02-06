@@ -14,7 +14,7 @@ const genAI = new GoogleGenerativeAI(apiKey);
 export const getGeminiResponse = async (history: ChatMessage[], newMessage: string, language: Language, data: { tasks: Task[], classes: Class[], notes: Note[], assignments: Assignment[], quizzes: Quiz[] }): Promise<string> => {
   try {
     // استخدام الموديل المستقر
-    const model = genAI.getGenerativeModel({ model: "gemini-pro" });
+    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
     // تحويل صيغة المحادثة لتتوافق مع المكتبة الجديدة
     // Google Generative AI requires 'user' and 'model' roles
