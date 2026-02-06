@@ -1,49 +1,50 @@
-import { GoogleGenAI, GenerateContentResponse } from "@google/genai";
+import { GoogleGenerativeAI } from "@google/generative-ai";
 import { ChatMessage, Language, Task, Class, Note, Assignment, Quiz } from '../types';
 
-// 1. التصحيح هنا: استخدام import.meta.env بدلاً من process.env
-// واستخدام الاسم الجديد الذي يبدأ بـ VITE_
+// استدعاء المفتاح
 const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
 
 if (!apiKey) {
-  console.warn("VITE_GEMINI_API_KEY environment variable not set. Gemini API calls will fail.");
+  console.warn("VITE_GEMINI_API_KEY environment variable not set.");
 }
 
-// 2. تمرير المفتاح الصحيح
-const ai = new GoogleGenAI({ apiKey: apiKey as string });
+// إعداد الاتصال بالمكتبة الجديدة
+const genAI = new GoogleGenerativeAI(apiKey);
 
 export const getGeminiResponse = async (history: ChatMessage[], newMessage: string, language: Language, data: { tasks: Task[], classes: Class[], notes: Note[], assignments: Assignment[], quizzes: Quiz[] }): Promise<string> => {
   try {
-    // 3. ملاحظة: تأكد من اسم الموديل، حالياً النسخة المستقرة هي gemini-1.5-flash
-    // إذا كان لديك وصول لـ 2.5 اتركه، لكن 1.5 أضمن للعمل
-    const model = 'gemini-1.5-flash'; 
-    
-    const contents = history.map(msg => ({
-        role: msg.role === 'user' ? 'user' : 'model', // تأكد من توافق الأدوار
+    // استخدام الموديل المستقر
+    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+
+    // تحويل صيغة المحادثة لتتوافق مع المكتبة الجديدة
+    // Google Generative AI requires 'user' and 'model' roles
+    const historyForGemini = history.map(msg => ({
+        role: msg.role === 'user' ? 'user' : 'model',
         parts: [{ text: msg.text }]
     }));
-    contents.push({ role: 'user', parts: [{ text: newMessage }] });
 
-    const dataInfo = `إليك بياناتك الحالية: مهام: ${JSON.stringify(data.tasks)}, دروس: ${JSON.stringify(data.classes)}, ملاحظات: ${JSON.stringify(data.notes)}, واجبات: ${JSON.stringify(data.assignments)}, اختبارات: ${JSON.stringify(data.quizzes)}`;
-
-    const systemInstruction = `أنت مساعد طلابي مفيد اسمك R.Note AI. يمكنك المساعدة في نصائح الدراسة وتلخيص النصوص وشرح المفاهيم وتنظيم المهام والمساعدة في إدارة الجدول الدراسي والملاحظات والواجبات. ${dataInfo} اجعل إجاباتك موجزة ومفيدة للطالب المشغول. قم بتنسيق ردودك باستخدام الماركداون. الرجاء الرد باللغة العربية.`;
-
-    const fullContents = [
-        { role: 'user', parts: [{ text: systemInstruction }] },
-        { role: 'model', parts: [{ text: 'فهمت. أنا R.Note AI، مساعد الطلاب. كيف يمكنني مساعدتك اليوم؟' }] },
-        ...contents
-    ];
-
-    const response: GenerateContentResponse = await ai.models.generateContent({
-        model: model,
-        contents: fullContents,
+    // إعداد الشات
+    const chat = model.startChat({
+        history: historyForGemini,
+        generationConfig: {
+            maxOutputTokens: 1000,
+        },
     });
 
-    // التأكد من وجود نص في الرد
-    return response.text ? response.text : "عذراً، لم أستطع توليد إجابة.";
+    // تجهيز السياق (Context)
+    const dataInfo = `إليك بيانات الطالب الحالية: مهام: ${JSON.stringify(data.tasks)}, دروس: ${JSON.stringify(data.classes)}, ملاحظات: ${JSON.stringify(data.notes)}, واجبات: ${JSON.stringify(data.assignments)}, اختبارات: ${JSON.stringify(data.quizzes)}`;
+
+    const systemInstruction = `أنت مساعد طلابي ذكي اسمه R.Note AI. هدفك مساعدة الطالب في تنظيم وقته ودراسته. ${dataInfo}. تكلم باللهجة العراقية الودودة أو العربية الفصحى حسب لغة الطالب. كن مختصراً ومباشراً.`;
+
+    // إرسال الرسالة (دمج التعليمات مع رسالة المستخدم لأن مكتبة الويب لا تدعم System Instruction بشكل مباشر في كل النسخ)
+    const finalPrompt = `${systemInstruction}\n\nسؤال الطالب: ${newMessage}`;
+
+    const result = await chat.sendMessage(finalPrompt);
+    const response = result.response;
+    return response.text();
     
   } catch (error) {
-    console.error("Error calling Gemini API:", error);
-    return "واجهت مشكلة في الاتصال بالذكاء الاصطناعي. يرجى التحقق من المفتاح أو الاتصال بالإنترنت.";
+    console.error("Gemini Error:", error);
+    return "آسف، صار عندي خلل بسيط بالاتصال. تأكد من النت وحاول مرة ثانية.";
   }
 };
