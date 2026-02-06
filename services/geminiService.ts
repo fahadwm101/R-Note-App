@@ -24,7 +24,7 @@ export const getGeminiResponse = async (history: ChatMessage[], newMessage: stri
     `;
 
     // 2. الاتصال بسيرفرنا الخاص (api/gemini)
-    const response = await fetch('/api/gemini', {
+    const response = await fetch('/api/proxy', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
