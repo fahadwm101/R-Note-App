@@ -1,51 +1,46 @@
-import { GoogleGenerativeAI } from "@google/generative-ai";
 import { ChatMessage, Language, Task, Class, Note, Assignment, Quiz } from '../types';
 
-// استدعاء المفتاح
-// ضع مفتاحك الحقيقي هنا مباشرة للتجربة
-const apiKey = "AIzaSyDrJ8l6wlVtrUEo9cnDadSDV9j-Ctc_PuA";
-
-if (!apiKey) {
-  console.warn("VITE_GEMINI_API_KEY environment variable not set.");
-}
-
-// إعداد الاتصال بالمكتبة الجديدة
-const genAI = new GoogleGenerativeAI(apiKey);
+// لاحظ: ما نحتاج نستدعي مكتبة جوجل هنا، لأن الشغل كله صار بالسيرفر
 
 export const getGeminiResponse = async (history: ChatMessage[], newMessage: string, language: Language, data: { tasks: Task[], classes: Class[], notes: Note[], assignments: Assignment[], quizzes: Quiz[] }): Promise<string> => {
   try {
-    // استخدام الموديل المستقر
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+    // 1. ترتيب البيانات عشان السيرفر يفهمها
+    const dataInfo = `بيانات الطالب: مهام: ${JSON.stringify(data.tasks)}, دروس: ${JSON.stringify(data.classes)}, ملاحظات: ${JSON.stringify(data.notes)}`;
+    
+    // تحويل المحادثة لنص بسيط
+    const chatHistoryText = history.map(msg => `${msg.role === 'user' ? 'الطالب' : 'المساعد'}: ${msg.text}`).join('\n');
+    
+    // الرسالة الكاملة اللي راح نرسلها
+    const fullPrompt = `
+      أنت R.Note AI، مساعد طلابي ذكي.
+      ${dataInfo}
+      
+      تاريخ المحادثة السابقة:
+      ${chatHistoryText}
+      
+      سؤال الطالب الجديد: ${newMessage}
+      
+      جاوب باختصار وفائدة باللهجة العراقية أو العربية الفصحى.
+    `;
 
-    // تحويل صيغة المحادثة لتتوافق مع المكتبة الجديدة
-    // Google Generative AI requires 'user' and 'model' roles
-    const historyForGemini = history.map(msg => ({
-        role: msg.role === 'user' ? 'user' : 'model',
-        parts: [{ text: msg.text }]
-    }));
-
-    // إعداد الشات
-    const chat = model.startChat({
-        history: historyForGemini,
-        generationConfig: {
-            maxOutputTokens: 1000,
-        },
+    // 2. الاتصال بسيرفرنا الخاص (api/gemini)
+    const response = await fetch('/api/gemini', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ prompt: fullPrompt }),
     });
 
-    // تجهيز السياق (Context)
-    const dataInfo = `إليك بيانات الطالب الحالية: مهام: ${JSON.stringify(data.tasks)}, دروس: ${JSON.stringify(data.classes)}, ملاحظات: ${JSON.stringify(data.notes)}, واجبات: ${JSON.stringify(data.assignments)}, اختبارات: ${JSON.stringify(data.quizzes)}`;
+    if (!response.ok) {
+      throw new Error('فشل الاتصال بالسيرفر');
+    }
 
-    const systemInstruction = `أنت مساعد طلابي ذكي اسمه R.Note AI. هدفك مساعدة الطالب في تنظيم وقته ودراسته. ${dataInfo}. تكلم باللهجة العراقية الودودة أو العربية الفصحى حسب لغة الطالب. كن مختصراً ومباشراً.`;
+    const json = await response.json();
+    return json.text;
 
-    // إرسال الرسالة (دمج التعليمات مع رسالة المستخدم لأن مكتبة الويب لا تدعم System Instruction بشكل مباشر في كل النسخ)
-    const finalPrompt = `${systemInstruction}\n\nسؤال الطالب: ${newMessage}`;
-
-    const result = await chat.sendMessage(finalPrompt);
-    const response = result.response;
-    return response.text();
-    
   } catch (error) {
-    console.error("Gemini Error:", error);
-    return "آسف، صار عندي خلل بسيط بالاتصال. تأكد من النت وحاول مرة ثانية.";
+    console.error("Error calling internal API:", error);
+    return "آسف، السيرفر ما جاوبني. حاول مرة ثانية.";
   }
 };
