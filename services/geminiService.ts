@@ -2,7 +2,8 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 import { ChatMessage, Language, Task, Class, Note, Assignment, Quiz } from '../types';
 
 // استدعاء المفتاح
-const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
+// ضع مفتاحك الحقيقي هنا مباشرة للتجربة
+const apiKey = "AIzaSyDrJ8l6wlVtrUEo9cnDadSDV9j-Ctc_PuA";
 
 if (!apiKey) {
   console.warn("VITE_GEMINI_API_KEY environment variable not set.");
