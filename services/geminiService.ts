@@ -23,14 +23,14 @@ export const getGeminiResponse = async (history: ChatMessage[], newMessage: stri
       جاوب باختصار وفائدة باللهجة العراقية أو العربية الفصحى.
     `;
 
-    // 2. الاتصال بسيرفرنا الخاص (api/gemini)
+    // تأكد أن الرابط هو /api/proxy وليس /api/gemini
     const response = await fetch('/api/proxy', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ prompt: fullPrompt }),
-    });
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ prompt: fullPrompt }),
+  });
 
     if (!response.ok) {
       throw new Error('فشل الاتصال بالسيرفر');
