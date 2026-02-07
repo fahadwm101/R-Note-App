@@ -19,7 +19,7 @@ export default async function handler(request, response) {
 
     // 3. الاتصال المباشر بجوجل (بدون مكتبة)
     // نستخدم gemini-1.5-flash لأنه الأحدث والأسرع
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${apiKey}`;
 
     const googleResponse = await fetch(url, {
       method: 'POST',
