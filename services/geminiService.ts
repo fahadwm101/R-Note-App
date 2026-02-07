@@ -1,46 +1,50 @@
+import { GoogleGenerativeAI } from "@google/generative-ai";
 import { ChatMessage, Language, Task, Class, Note, Assignment, Quiz } from '../types';
 
-// لاحظ: ما نحتاج نستدعي مكتبة جوجل هنا، لأن الشغل كله صار بالسيرفر
+// استدعاء المفتاح
+const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
+
+if (!apiKey) {
+  console.warn("VITE_GEMINI_API_KEY environment variable not set.");
+}
+
+// إعداد الاتصال بالمكتبة الجديدة
+const genAI = new GoogleGenerativeAI(apiKey);
 
 export const getGeminiResponse = async (history: ChatMessage[], newMessage: string, language: Language, data: { tasks: Task[], classes: Class[], notes: Note[], assignments: Assignment[], quizzes: Quiz[] }): Promise<string> => {
   try {
-    // 1. ترتيب البيانات عشان السيرفر يفهمها
-    const dataInfo = `بيانات الطالب: مهام: ${JSON.stringify(data.tasks)}, دروس: ${JSON.stringify(data.classes)}, ملاحظات: ${JSON.stringify(data.notes)}`;
+    // استخدام الموديل المستقر
+    const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+
+    // تحويل صيغة المحادثة لتتوافق مع المكتبة الجديدة
+    // Google Generative AI requires 'user' and 'model' roles
+    const historyForGemini = history.map(msg => ({
+        role: msg.role === 'user' ? 'user' : 'model',
+        parts: [{ text: msg.text }]
+    }));
+
+    // إعداد الشات
+    const chat = model.startChat({
+        history: historyForGemini,
+        generationConfig: {
+            maxOutputTokens: 1000,
+        },
+    });
+
+    // تجهيز السياق (Context)
+    const dataInfo = `إليك بيانات الطالب الحالية: مهام: ${JSON.stringify(data.tasks)}, دروس: ${JSON.stringify(data.classes)}, ملاحظات: ${JSON.stringify(data.notes)}, واجبات: ${JSON.stringify(data.assignments)}, اختبارات: ${JSON.stringify(data.quizzes)}`;
+
+    const systemInstruction = `أنت مساعد طلابي ذكي اسمه R.Note AI. هدفك مساعدة الطالب في تنظيم وقته ودراسته. ${dataInfo}. تكلم باللهجة العراقية الودودة أو العربية الفصحى حسب لغة الطالب. كن مختصراً ومباشراً.`;
+
+    // إرسال الرسالة (دمج التعليمات مع رسالة المستخدم لأن مكتبة الويب لا تدعم System Instruction بشكل مباشر في كل النسخ)
+    const finalPrompt = `${systemInstruction}\n\nسؤال الطالب: ${newMessage}`;
+
+    const result = await chat.sendMessage(finalPrompt);
+    const response = result.response;
+    return response.text();
     
-    // تحويل المحادثة لنص بسيط
-    const chatHistoryText = history.map(msg => `${msg.role === 'user' ? 'الطالب' : 'المساعد'}: ${msg.text}`).join('\n');
-    
-    // الرسالة الكاملة اللي راح نرسلها
-    const fullPrompt = `
-      أنت R.Note AI، مساعد طلابي ذكي.
-      ${dataInfo}
-      
-      تاريخ المحادثة السابقة:
-      ${chatHistoryText}
-      
-      سؤال الطالب الجديد: ${newMessage}
-      
-      جاوب باختصار وفائدة باللهجة العراقية أو العربية الفصحى.
-    `;
-
-    // تأكد أن الرابط هو /api/proxy وليس /api/gemini
-    const response = await fetch('/api/proxy', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({ prompt: fullPrompt }),
-  });
-
-    if (!response.ok) {
-      throw new Error('فشل الاتصال بالسيرفر');
-    }
-
-    const json = await response.json();
-    return json.text;
-
   } catch (error) {
-    console.error("Error calling internal API:", error);
-    return "آسف، السيرفر ما جاوبني. حاول مرة ثانية.";
+    console.error("Gemini Error:", error);
+    return "آسف، صار عندي خلل بسيط بالاتصال. تأكد من النت وحاول مرة ثانية.";
   }
 };
