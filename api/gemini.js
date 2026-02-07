@@ -1,6 +1,6 @@
-// نستخدم الصيغة الكلاسيكية (CommonJS) لمنع تحطم السيرفر
-module.exports = async (request, response) => {
-  // إعدادات السماح
+// هذا الكود لا يحتاج أي مكتبات خارجية
+export default async function handler(request, response) {
+  // 1. إعدادات السماح (CORS)
   response.setHeader('Access-Control-Allow-Origin', '*');
   response.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
   response.setHeader('Access-Control-Allow-Headers', 'Content-Type');
@@ -8,32 +8,48 @@ module.exports = async (request, response) => {
   if (request.method === 'OPTIONS') return response.status(200).end();
 
   try {
+    // 2. التحقق من المفتاح
     const apiKey = process.env.VITE_GEMINI_API_KEY;
-    // نتأكد أن المفتاح موجود
-    if (!apiKey) throw new Error('API Key is missing in Vercel Settings');
+    if (!apiKey) {
+      return response.status(500).json({ error: 'المفتاح غير موجود في إعدادات Vercel' });
+    }
 
     const { prompt } = request.body;
-    
-    // رابط gemini-pro المباشر
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${apiKey}`;
+
+    // 3. الاتصال المباشر بجوجل (بدون مكتبة)
+    // نستخدم gemini-1.5-flash لأنه الأحدث والأسرع
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
 
     const googleResponse = await fetch(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
+      body: JSON.stringify({
+        contents: [{
+          parts: [{ text: prompt }]
+        }]
+      })
     });
 
     const data = await googleResponse.json();
 
+    // 4. معالجة الأخطاء القادمة من جوجل
     if (!googleResponse.ok) {
-      throw new Error(data.error?.message || 'Google API Error');
+      console.error("Google Error:", data);
+      return response.status(500).json({ 
+        error: data.error?.message || 'رفض جوجل الطلب لسبب غير معروف' 
+      });
     }
 
-    return response.status(200).json({ text: data.candidates[0].content.parts[0].text });
+    // 5. استخراج النص وإرساله
+    const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
+    if (!text) {
+      return response.status(500).json({ error: 'جوجل أرسل رداً فارغاً' });
+    }
+
+    return response.status(200).json({ text });
 
   } catch (error) {
-    console.error("Server Error:", error);
-    // نرجع رسالة الخطأ كنص json عشان نشوفها بالمتصفح
+    console.error("Server Crash:", error);
     return response.status(500).json({ error: error.message });
   }
-};
+}
