@@ -1,3 +1,4 @@
+// التحديث الجديد V2
 // هذا الكود لا يحتاج أي مكتبات خارجية
 export default async function handler(request, response) {
   // 1. إعدادات السماح (CORS)
