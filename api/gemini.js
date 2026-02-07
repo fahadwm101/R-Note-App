@@ -1,5 +1,5 @@
 export default async function handler(request, response) {
-  // إعدادات CORS
+  // 1. السماح بالوصول (CORS)
   response.setHeader('Access-Control-Allow-Origin', '*');
   response.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
   response.setHeader('Access-Control-Allow-Headers', 'Content-Type');
@@ -12,24 +12,37 @@ export default async function handler(request, response) {
 
     const { messages, currentData } = request.body;
 
-    // تعليمات النظام الصارمة
+    // 2. تعليمات النظام (هنا نعطيه الشخصية والصلاحيات)
     const systemPrompt = `
       أنت المساعد الذكي لتطبيق R.NOTE.
-      لديك صلاحية كاملة لإدارة بيانات الطالب.
+      دورك: إدارة حياة الطالب الدراسية بالكامل.
+      اللهجة: عراقية ودودة ومختصرة.
       
-      البيانات الحالية:
+      البيانات الحالية للطالب هي:
       ${JSON.stringify(currentData)}
 
-      يجب أن يكون ردك بصيغة JSON فقط وحصراً (بدون markdown)، بهذا الشكل:
+      القاعدة الذهبية:
+      لا ترد بنص عادي أبداً. يجب أن يكون ردك بصيغة JSON فقط وحصراً، بهذا الشكل:
       {
-        "reply": "نص الرد باللهجة العراقية",
+        "reply": "نص الرد الذي سيقرأه الطالب",
         "action": {
           "type": "NONE" | "ADD_TASK" | "DELETE_TASK" | "ADD_NOTE" | "DELETE_NOTE" | "ADD_ASSIGNMENT" | "DELETE_ASSIGNMENT",
-          "payload": { ...تفاصيل العنصر... }
+          "payload": { ...بيانات العنصر الجديد أو الـ id للعنصر المحذوف... }
         }
       }
+
+      أمثلة:
+      - الطالب: "ضيف مهمة كويز بايثون باجر"
+        الرد: { "reply": "تمام، ضفتلك كويز بايثون لباجر.", "action": { "type": "ADD_TASK", "payload": { "title": "كويز بايثون", "date": "2024-02-10" } } }
+      
+      - الطالب: "امسح الملاحظة الي كتبتها عن الجافا"
+        الرد: { "reply": "مسحتلك ملاحظة الجافا.", "action": { "type": "DELETE_NOTE", "payload": { "id": "معرف الملاحظة من البيانات الحالية" } } }
+      
+      - الطالب: "شكو عندي مهام؟"
+        الرد: { "reply": "عندك 3 مهام، أهم وحدة هي...", "action": { "type": "NONE", "payload": {} } }
     `;
 
+    // 3. الاتصال بالموديل (gemini-2.5-flash)
     const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
 
     const googleResponse = await fetch(url, {
@@ -40,21 +53,18 @@ export default async function handler(request, response) {
           { role: "user", parts: [{ text: systemPrompt }] },
           ...messages
         ],
-        generationConfig: { response_mime_type: "application/json" }
+        generationConfig: { response_mime_type: "application/json" } // إجبار الرد بصيغة JSON
       })
     });
 
     const data = await googleResponse.json();
 
     if (!googleResponse.ok) {
-        console.error("Google API Error:", data);
+        console.error("Google Error:", data);
         throw new Error(data.error?.message || 'خطأ من جوجل');
     }
 
-    // تنظيف الرد من أي شوائب (مثل علامات ```json)
-    let textResponse = data.candidates[0].content.parts[0].text;
-    textResponse = textResponse.replace(/```json/g, '').replace(/```/g, '').trim();
-
+    const textResponse = data.candidates[0].content.parts[0].text;
     return response.status(200).json(JSON.parse(textResponse));
 
   } catch (error) {
