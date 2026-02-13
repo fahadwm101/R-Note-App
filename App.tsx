@@ -123,16 +123,16 @@ const AppContent: React.FC = () => {
         console.log('item:', item);
         setModalContent({ view, item });
         if (view === 'schedule') {
-            // If no item is provided (adding new class), use default values
+            // If no item is provided (adding new class), use empty values
             const newItem = item || {
-                subject: 'Mathematics',
-                time: '11:00 AM',
-                day: 'Wednesday',
-                instructor: 'Dr. Smith',
-                color: 'bg-yellow-500'
+                subject: '',
+                time: '',
+                day: 'Sunday', // Default day is useful
+                instructor: '',
+                color: 'bg-blue-500' // Default color is useful for UI
             };
             setCurrentItem(newItem);
-            console.log('Modal opened with pre-filled data');
+            console.log('Modal opened with empty data');
         } else {
             setCurrentItem(item || (view === 'notes' ? { title: '', subject: '', content: '' } : {}));
         }
@@ -174,7 +174,7 @@ const AppContent: React.FC = () => {
                 return (
                     <div>
                         <FormField label={t('subject')} name="subject" type="text" value={(currentItem as Class).subject || ''} onChange={handleFormChange} required />
-                        <FormField label={t('time')} name="time" type="text" value={(currentItem as Class).time || '08:00 AM'} onChange={handleFormChange} options={
+                        <FormField label={t('time')} name="time" type="text" value={(currentItem as Class).time || ''} onChange={handleFormChange} options={
                             // Generate time slots every 15 minutes from 08:00 AM to 08:00 PM
                             Array.from({ length: 49 }).map((_, i) => {
                                 const totalMinutes = 8 * 60 + i * 15; // Start at 8:00 AM
