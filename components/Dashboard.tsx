@@ -249,7 +249,6 @@ const Dashboard: React.FC<DashboardProps> = ({ tasks = [], quizzes = [], notes =
                                     {ICONS.tasks}
                                     <span className="ms-3">{suggestedTask.title}</span>
                                 </div>
-                                <p className="mb-2 text-sm"><strong>{t('subjectLabel')}</strong> {suggestedTask.subject}</p>
                                 <p className="mb-2 text-sm"><strong>{t('priorityLabel')}</strong> {suggestedTask.priority}</p>
                                 <p className="mb-4 text-sm"><strong>{t('dueLabel')}</strong> {new Date(suggestedTask.dueDate).toLocaleDateString()}</p>
                                 <div className="flex space-x-2">
