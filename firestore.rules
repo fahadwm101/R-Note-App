@@ -1,0 +1,11 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // ⚠️ DANGER: PUBLIC ACCESS ⚠️
+    // This allows ANYONE to read/write your database.
+    // Use this ONLY for debugging to confirm if the issue is Rules vs Connection.
+    match /{document=**} {
+      allow read, write: if true;
+    }
+  }
+}

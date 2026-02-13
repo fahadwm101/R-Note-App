@@ -105,11 +105,11 @@ const AppContent: React.FC = () => {
                 alert.remove();
                 closeModal();
             }, 1500);
-        } catch (error) {
+        } catch (error: any) {
             console.error('Failed to save item:', error);
-            alert.textContent = 'Error saving item';
+            alert.textContent = `Error: ${error.message || 'Unknown error'}`;
             alert.style.background = '#dc2626';
-            setTimeout(() => alert.remove(), 3000);
+            setTimeout(() => alert.remove(), 5000);
         } finally {
             setIsSaving(false);
         }
