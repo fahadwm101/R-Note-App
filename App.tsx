@@ -174,15 +174,18 @@ const AppContent: React.FC = () => {
                 return (
                     <div>
                         <FormField label={t('subject')} name="subject" type="text" value={(currentItem as Class).subject || ''} onChange={handleFormChange} required />
-                        <FormField label={t('time')} name="time" type="select" value={(currentItem as Class).time || '08:00 AM'} onChange={handleFormChange} options={[
-                            { value: '08:00 AM', label: '08:00 - 09:00 AM' },
-                            { value: '09:00 AM', label: '09:00 - 10:00 AM' },
-                            { value: '10:00 AM', label: '10:00 - 11:00 AM' },
-                            { value: '11:00 AM', label: '11:00 - 12:00 PM' },
-                            { value: '12:00 PM', label: '12:00 - 01:00 PM' },
-                            { value: '01:00 PM', label: '01:00 - 02:00 PM' },
-                            { value: '02:00 PM', label: '02:00 - 03:00 PM' }
-                        ]} required />
+                        <FormField label={t('time')} name="time" type="text" value={(currentItem as Class).time || '08:00 AM'} onChange={handleFormChange} options={
+                            // Generate time slots every 15 minutes from 08:00 AM to 08:00 PM
+                            Array.from({ length: 49 }).map((_, i) => {
+                                const totalMinutes = 8 * 60 + i * 15; // Start at 8:00 AM
+                                const hours = Math.floor(totalMinutes / 60);
+                                const minutes = totalMinutes % 60;
+                                const period = hours >= 12 && hours < 24 ? 'PM' : 'AM';
+                                const displayHour = hours % 12 || 12;
+                                const timeString = `${displayHour.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')} ${period}`;
+                                return { value: timeString, label: timeString };
+                            })
+                        } required />
                         <FormField label={t('day')} name="day" type="select" value={(currentItem as Class).day || 'Sunday'} onChange={handleFormChange} options={['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday'].map(day => ({ value: day, label: t(day.toLowerCase()) }))} />
                         <FormField label={t('instructor')} name="instructor" type="text" value={(currentItem as Class).instructor || ''} onChange={handleFormChange} required />
                         <FormField label={t('color')} name="color" type="select" value={(currentItem as Class).color || 'bg-blue-500'} onChange={handleFormChange} options={[

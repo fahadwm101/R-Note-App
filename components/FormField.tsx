@@ -57,16 +57,26 @@ const FormField: React.FC<FormFieldProps> = ({
                     ))}
                 </select>
             ) : (
-                <input
-                    type={type}
-                    name={name}
-                    value={value}
-                    onChange={onChange}
-                    placeholder={placeholder}
-                    required={required}
-                    aria-label={label}
-                    className={baseClasses}
-                />
+                <>
+                    <input
+                        type={type}
+                        name={name}
+                        value={value}
+                        onChange={onChange}
+                        placeholder={placeholder}
+                        required={required}
+                        aria-label={label}
+                        className={baseClasses}
+                        list={options.length > 0 ? `${name}-list` : undefined}
+                    />
+                    {options.length > 0 && (
+                        <datalist id={`${name}-list`}>
+                            {options.map(option => (
+                                <option key={option.value} value={option.value} />
+                            ))}
+                        </datalist>
+                    )}
+                </>
             )}
         </div>
     );

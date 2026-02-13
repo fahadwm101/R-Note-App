@@ -99,21 +99,40 @@ const ClassSchedule: React.FC<ClassScheduleProps> = ({ classes, onDelete, onEdit
                 {time}
               </div>
               {originalDays.map(day => {
-                const classItem = classes.find(c => c.day === day && c.time.startsWith(time.slice(0, 5)));
+                const classItem = classes.find(c => {
+                  if (c.day !== day) return false;
+
+                  // Helper to parse "HH:MM AM/PM"
+                  const parse = (tStr: string) => {
+                    const [timePart, meridiem] = tStr.split(' ');
+                    const [hour] = timePart.split(':');
+                    return {
+                      hour: parseInt(hour, 10),
+                      meridiem: meridiem?.toUpperCase()
+                    };
+                  };
+
+                  const slotTime = parse(time);
+                  const classTime = parse(c.time);
+
+                  // Match if hour and meridiem are the same (e.g., 08:15 AM matches 08:00 AM slot)
+                  return slotTime.hour === classTime.hour && slotTime.meridiem === classTime.meridiem;
+                });
+
                 return (
                   <div key={`${day}-${time}`} className="border-b ltr:border-r rtl:border-l border-white/20 h-16 p-1 group relative">
                     {classItem && (
-                      <div className={`rounded p-2 h-full flex flex-col justify-between ${classItem.color}/20 backdrop-blur-sm text-white text-xs`}>
-                        <div>
-                          <p className="font-bold">{classItem.subject}</p>
-                          <p>{classItem.time}</p>
-                          <p className="text-gray-200">{classItem.instructor}</p>
+                      <div className={`rounded p-2 h-full flex flex-col justify-between ${classItem.color}/20 backdrop-blur-sm text-white text-xs overflow-hidden`}>
+                        <div className="overflow-hidden">
+                          <p className="font-bold truncate">{classItem.subject}</p>
+                          <p className="truncate">{classItem.time}</p>
+                          <p className="text-gray-200 truncate">{classItem.instructor}</p>
                         </div>
-                        <div className="absolute bottom-1 end-1 flex space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                          <button onClick={() => onEdit(classItem)} className="p-1 bg-black bg-opacity-40 rounded-full hover:bg-opacity-60">
+                        <div className="absolute bottom-1 end-1 flex space-x-1 opacity-0 group-hover:opacity-100 transition-opacity bg-black/50 p-1 rounded-full backdrop-blur-md">
+                          <button onClick={() => onEdit(classItem)} className="p-1 hover:text-indigo-400 text-white transition-colors">
                             <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.5L16.732 3.732z" /></svg>
                           </button>
-                          <button onClick={() => onDelete(classItem.id)} className="p-1 bg-black bg-opacity-40 rounded-full hover:bg-opacity-60">
+                          <button onClick={() => onDelete(classItem.id)} className="p-1 hover:text-red-400 text-white transition-colors">
                             <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
                           </button>
                         </div>
