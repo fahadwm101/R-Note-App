@@ -1,18 +1,18 @@
 import React from 'react';
-import { View } from '../types';
+import { Link, useLocation } from 'react-router-dom';
 import { ICONS } from '../constants';
 import { useLanguage } from '../LanguageContext';
 import { useAuth } from '../src/context/AuthContext';
 
 interface SidebarProps {
-    currentView: View;
-    setView: (view: View) => void;
     isOpen: boolean;
 }
 
-const Sidebar: React.FC<SidebarProps> = ({ currentView, setView, isOpen }) => {
+const Sidebar: React.FC<SidebarProps> = ({ isOpen }) => {
     const { t, language } = useLanguage();
     const { user } = useAuth();
+    const location = useLocation();
+    const currentView = location.pathname.substring(1) || 'dashboard';
     const [avatar, setAvatar] = React.useState<string>(user?.photoURL || '/logo.png');
     const [studentName, setStudentName] = React.useState<string>(user?.displayName || 'Student');
     const [imageError, setImageError] = React.useState<boolean>(false);
@@ -81,13 +81,9 @@ const Sidebar: React.FC<SidebarProps> = ({ currentView, setView, isOpen }) => {
             </div>
             <nav className="px-2 py-4 space-y-1">
                 {navItems.map((item) => (
-                    <a
+                    <Link
                         key={item.id}
-                        href="#"
-                        onClick={(e) => {
-                            e.preventDefault();
-                            setView(item.id);
-                        }}
+                        to={`/${item.id}`}
                         className={`flex items-center px-4 py-2 text-sm font-medium rounded-md transition-colors ${currentView === item.id
                             ? 'bg-indigo-100 dark:bg-indigo-900 text-indigo-700 dark:text-indigo-300'
                             : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
@@ -95,7 +91,7 @@ const Sidebar: React.FC<SidebarProps> = ({ currentView, setView, isOpen }) => {
                     >
                         {item.icon}
                         <span className="ms-3">{item.name}</span>
-                    </a>
+                    </Link>
                 ))}
             </nav>
             <div className="mt-auto py-4 text-center">

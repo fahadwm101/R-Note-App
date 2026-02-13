@@ -1,5 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
+import { Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import Header from './components/Header';
 import Sidebar from './components/Sidebar';
 import Dashboard from './components/Dashboard';
@@ -14,7 +15,7 @@ import SmartAssistant from './components/SmartAssistant';
 import Modal from './components/Modal';
 import FormField from './components/FormField';
 import Login from './src/components/Login';
-import { View, ModalContent, AnyItem, Class, Task, Quiz, Assignment, Note, Priority } from './types';
+import { ModalContent, AnyItem, Class, Task, Quiz, Assignment, Note, Priority } from './types';
 import { useLanguage } from './LanguageContext';
 import { useDataManagement } from './hooks/useDataManagement';
 import { AuthProvider, useAuth } from './src/context/AuthContext';
@@ -32,6 +33,7 @@ const App: React.FC = () => {
 
 const AppContent: React.FC = () => {
     const { user, loading } = useAuth();
+    const navigate = useNavigate();
 
     if (loading) {
         return (
@@ -48,7 +50,6 @@ const AppContent: React.FC = () => {
         return <Login />;
     }
 
-    const [currentView, setCurrentView] = useState<View>('schedule');
     const [isSidebarOpen, setSidebarOpen] = useState(false);
     const { t } = useLanguage();
 
@@ -67,7 +68,7 @@ const AppContent: React.FC = () => {
         }
     }, []);
 
-    const handleSave = () => {
+    const handleSave = async () => {
         // Show visible alert
         const alert = document.createElement('div');
         alert.textContent = 'Saving...';
@@ -96,7 +97,7 @@ const AppContent: React.FC = () => {
         setIsSaving(true);
         try {
             const { view, item: originalItem } = modalContent;
-            saveData(view, originalItem, currentItem);
+            await saveData(view, originalItem, currentItem);
             console.log('Save data called');
             alert.textContent = 'Saved successfully!';
             setTimeout(() => {
@@ -215,44 +216,6 @@ const AppContent: React.FC = () => {
         }
     }
 
-
-    const renderView = () => {
-        switch (currentView) {
-            case 'dashboard':
-                return <Dashboard tasks={tasks} quizzes={quizzes} notes={notes} streak={streak} openModal={openModal} />;
-            case 'schedule':
-                return <ClassSchedule classes={classes} onDelete={(id) => handleDelete(id, 'schedule')} onEdit={(item) => openModal('schedule', item)} />;
-            case 'tasks':
-                return <Tasks tasks={tasks} onToggleComplete={handleToggleTask} onDelete={(id) => handleDelete(id, 'tasks')} onEdit={(item) => openModal('tasks', item)} />;
-            case 'quizzes':
-                return <Quizzes quizzes={quizzes} onDelete={(id) => handleDelete(id, 'quizzes')} onEdit={(item) => openModal('quizzes', item)} />;
-            case 'assignments':
-                return <Assignments assignments={assignments} onDelete={(id) => handleDelete(id, 'assignments')} onEdit={(item) => openModal('assignments', item)} />;
-            case 'notes':
-                return <Notes notes={notes} onAdd={() => openModal('notes')} onUpdate={handleNoteUpdate} onDelete={(id) => handleDelete(id, 'notes')} />;
-            case 'pomodoro':
-                return <Pomodoro />;
-            case 'profile':
-                return <ProfileSettings
-                    tasks={tasks}
-                    classes={classes}
-                    notes={notes}
-                    assignments={assignments}
-                    quizzes={quizzes}
-                    clearAllData={clearAllData}
-                />;
-            default:
-                return <Dashboard tasks={tasks} quizzes={quizzes} notes={notes} openModal={openModal} />;
-        }
-    };
-
-    const handleSetView = (view: View) => {
-        setCurrentView(view);
-        if (window.innerWidth < 1024) {
-            setSidebarOpen(false);
-        }
-    };
-
     return (
         <div className="flex h-screen text-gray-900 dark:text-gray-100 relative overflow-hidden bg-gray-50 dark:bg-slate-950 transition-colors duration-300">
             {/* 🌊 Organic Liquid Background */}
@@ -279,11 +242,31 @@ const AppContent: React.FC = () => {
             </div>
 
             <div className="relative z-10 flex w-full">
-                <Sidebar currentView={currentView} setView={handleSetView} isOpen={isSidebarOpen} />
+                <Sidebar isOpen={isSidebarOpen} />
                 <div className="flex-1 flex flex-col overflow-hidden">
                     <Header toggleSidebar={() => setSidebarOpen(!isSidebarOpen)} />
                     <main className="flex-1 overflow-x-hidden overflow-y-auto m-2 sm:m-4">
-                        {renderView()}
+                        <Routes>
+                            <Route path="/" element={<Navigate to="/dashboard" replace />} />
+                            <Route path="/dashboard" element={<Dashboard tasks={tasks} quizzes={quizzes} notes={notes} streak={streak} openModal={openModal} />} />
+                            <Route path="/schedule" element={<ClassSchedule classes={classes} onDelete={(id) => handleDelete(id, 'schedule')} onEdit={(item) => openModal('schedule', item)} />} />
+                            <Route path="/tasks" element={<Tasks tasks={tasks} onToggleComplete={handleToggleTask} onDelete={(id) => handleDelete(id, 'tasks')} onEdit={(item) => openModal('tasks', item)} />} />
+                            <Route path="/quizzes" element={<Quizzes quizzes={quizzes} onDelete={(id) => handleDelete(id, 'quizzes')} onEdit={(item) => openModal('quizzes', item)} />} />
+                            <Route path="/assignments" element={<Assignments assignments={assignments} onDelete={(id) => handleDelete(id, 'assignments')} onEdit={(item) => openModal('assignments', item)} />} />
+                            <Route path="/notes" element={<Notes notes={notes} onAdd={() => openModal('notes')} onUpdate={handleNoteUpdate} onDelete={(id) => handleDelete(id, 'notes')} />} />
+                            <Route path="/pomodoro" element={<Pomodoro />} />
+                            <Route path="/profile" element={
+                                <ProfileSettings
+                                    tasks={tasks}
+                                    classes={classes}
+                                    notes={notes}
+                                    assignments={assignments}
+                                    quizzes={quizzes}
+                                    clearAllData={clearAllData}
+                                />
+                            } />
+                            <Route path="*" element={<Navigate to="/dashboard" replace />} />
+                        </Routes>
                     </main>
                 </div>
                 {isSidebarOpen && <div onClick={() => setSidebarOpen(false)} className="fixed inset-0 bg-black opacity-50 z-30 lg:hidden"></div>}
