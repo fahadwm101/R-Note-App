@@ -43,7 +43,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen }) => {
         { id: 'profile', name: t('profileSettings'), icon: ICONS.profile },
     ];
 
-    const baseClasses = "flex flex-col bg-white/60 dark:bg-black/30 backdrop-blur-xl shadow-lg h-full transition-transform duration-300 ease-in-out z-40 w-64";
+    const baseClasses = "flex flex-col bg-slate-100/80 dark:bg-black/30 backdrop-blur-xl border-r border-slate-200 dark:border-slate-800 shadow-lg h-full transition-transform duration-300 ease-in-out z-40 w-64";
 
     // Positioning based on language
     const isRTL = language === 'ar';
@@ -58,8 +58,8 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen }) => {
             <div className="pt-32 pb-4 px-4 bg-gradient-to-b from-white/20 dark:from-black/20 to-transparent">
                 <div className="flex flex-col items-center">
                     {(!avatar || imageError) ? (
-                        <div className="h-16 w-16 rounded-full bg-slate-200 dark:bg-slate-800 border-2 border-slate-300 dark:border-slate-600 flex items-center justify-center mb-3 shadow-lg">
-                            <span className="text-2xl text-slate-500 dark:text-slate-400">
+                        <div className="h-16 w-16 rounded-full bg-white dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-600 flex items-center justify-center mb-3 shadow-md">
+                            <span className="text-2xl text-slate-400 dark:text-slate-400">
                                 <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" viewBox="0 0 20 20" fill="currentColor">
                                     <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
                                 </svg>
@@ -69,13 +69,13 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen }) => {
                         <img
                             src={avatar}
                             alt="Student Avatar"
-                            className="h-16 w-16 rounded-full object-cover border-2 border-white/50 dark:border-white/20 mb-3 shadow-lg"
+                            className="h-16 w-16 rounded-full object-cover border-2 border-white dark:border-white/20 mb-3 shadow-md"
                             onError={() => setImageError(true)}
                         />
                     )}
                     <div className="text-center">
-                        <p className="text-gray-900 dark:text-white font-bold text-lg tracking-wide">{studentName}</p>
-                        <p className="text-gray-500 dark:text-gray-400 text-xs uppercase tracking-wider font-medium">Student</p>
+                        <p className="text-slate-800 dark:text-white font-bold text-lg tracking-wide">{studentName}</p>
+                        <p className="text-slate-500 dark:text-gray-400 text-xs uppercase tracking-wider font-medium">Student</p>
                     </div>
                 </div>
             </div>
@@ -84,9 +84,9 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen }) => {
                     <Link
                         key={item.id}
                         to={`/${item.id}`}
-                        className={`flex items-center px-4 py-2 text-sm font-medium rounded-md transition-colors ${currentView === item.id
-                            ? 'bg-indigo-100 dark:bg-indigo-900 text-indigo-700 dark:text-indigo-300'
-                            : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
+                        className={`flex items-center px-4 py-2 text-sm font-medium rounded-md transition-all duration-200 ${currentView === item.id
+                            ? 'bg-white dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-300 shadow-sm ring-1 ring-slate-200 dark:ring-indigo-700'
+                            : 'text-slate-600 dark:text-gray-400 hover:bg-white/50 dark:hover:bg-gray-800 hover:text-slate-900 dark:hover:text-gray-200'
                             }`}
                     >
                         {item.icon}
@@ -95,7 +95,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen }) => {
                 ))}
             </nav>
             <div className="mt-auto py-4 text-center">
-                <p className="text-xs text-gray-500">v1.0.1 (Beta)</p>
+                <p className="text-xs text-slate-400 dark:text-gray-600">v1.0.1 (Beta)</p>
             </div>
         </aside>
     );

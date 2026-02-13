@@ -84,11 +84,12 @@ const AppContent: React.FC = () => {
         alert.style.fontWeight = 'bold';
         document.body.appendChild(alert);
 
-        console.log('=== handleSave function CALLED ===');
+        console.log('=== handleSave function CALLED in App.tsx ===');
         console.log('modalContent:', modalContent);
-        console.log('currentItem:', currentItem);
+        console.log('currentItem (raw):', currentItem);
+
         if (!modalContent || !currentItem) {
-            console.log('Validation failed: missing modalContent or currentItem');
+            console.error('Validation failed: missing modalContent or currentItem');
             alert.textContent = 'Error: Missing data';
             alert.style.background = '#dc2626';
             setTimeout(() => alert.remove(), 3000);
@@ -98,15 +99,17 @@ const AppContent: React.FC = () => {
         setIsSaving(true);
         try {
             const { view, item: originalItem } = modalContent;
+            console.log('Calling saveData with:', { view, originalItem, currentItem });
             await saveData(view, originalItem, currentItem);
-            console.log('Save data called');
+            console.log('Save data returned successfully');
+
             alert.textContent = 'Saved successfully!';
             setTimeout(() => {
                 alert.remove();
                 closeModal();
             }, 1500);
         } catch (error: any) {
-            console.error('Failed to save item:', error);
+            console.error('Failed to save item (caught in App.tsx):', error);
             alert.textContent = `Error: ${error.message || 'Unknown error'}`;
             alert.style.background = '#dc2626';
             setTimeout(() => alert.remove(), 5000);
@@ -132,7 +135,8 @@ const AppContent: React.FC = () => {
                 color: 'bg-blue-500' // Default color is useful for UI
             };
             setCurrentItem(newItem);
-            console.log('Modal opened with empty data');
+        } else if (view === 'tasks') {
+            setCurrentItem(item || { title: '', priority: Priority.Medium, completed: false, dueDate: new Date().toISOString().split('T')[0] });
         } else {
             setCurrentItem(item || (view === 'notes' ? { title: '', subject: '', content: '' } : {}));
         }
@@ -222,24 +226,24 @@ const AppContent: React.FC = () => {
 
     return (
         <div className="flex h-screen text-gray-900 dark:text-gray-100 relative overflow-hidden bg-gray-50 dark:bg-slate-950 transition-colors duration-300">
-            {/* 🌊 Organic Liquid Background */}
-            <div className="absolute inset-0 w-full h-full pointer-events-none">
+            {/* 🌊 Organic Liquid Background - Visible only in Dark Mode */}
+            <div className="absolute inset-0 w-full h-full pointer-events-none hidden dark:block">
 
                 {/* Blob 1: The Sunset (Orange) - Swimming Diagonally */}
                 <div className="absolute top-[-10%] left-[-10%] w-[80vw] h-[80vw]
-                     bg-orange-300/40 dark:bg-orange-500/30 mix-blend-multiply dark:mix-blend-screen blur-[100px] opacity-40
+                     bg-orange-900/20 mix-blend-screen blur-[100px] opacity-20
                      animate-first rounded-[40%_60%_70%_30%/40%_50%_60%_50%]">
                 </div>
 
                 {/* Blob 2: The Twilight (Purple) - Rotating & Morphing */}
                 <div className="absolute top-[20%] right-[-20%] w-[70vw] h-[70vw]
-                     bg-purple-300/40 dark:bg-purple-600/30 mix-blend-multiply dark:mix-blend-screen blur-[100px] opacity-40
+                     bg-purple-900/20 mix-blend-screen blur-[100px] opacity-20
                      animate-second rounded-[30%_70%_70%_30%/30%_30%_70%_70%]">
                 </div>
 
                 {/* Blob 3: The Deep Sea (Indigo) - Floating Up/Down */}
                 <div className="absolute bottom-[-20%] left-[20%] w-[60vw] h-[60vw]
-                     bg-indigo-300/40 dark:bg-indigo-600/30 mix-blend-multiply dark:mix-blend-screen blur-[120px] opacity-40
+                     bg-indigo-900/20 mix-blend-screen blur-[120px] opacity-20
                      animate-third rounded-[80%_20%_30%_70%/60%_40%_60%_40%]">
                 </div>
 
@@ -280,10 +284,10 @@ const AppContent: React.FC = () => {
             <Modal isOpen={!!modalContent} onClose={closeModal} title={modalContent?.item ? t('editItem') : t('addNewItem')}>
                 {renderModalContent()}
                 <div className="mt-6 flex justify-end space-x-3">
-                    <button onClick={closeModal} type="button" className="bg-white/60 dark:bg-gray-700/60 py-2 px-4 border border-gray-300/70 dark:border-gray-600/70 rounded-md shadow-sm text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50/60 dark:hover:bg-gray-600/60">
+                    <button onClick={closeModal} type="button" className="bg-white dark:bg-gray-700 border border-slate-300 dark:border-gray-600 rounded-md shadow-sm py-2 px-4 text-sm font-medium text-slate-700 dark:text-gray-200 hover:bg-slate-50 dark:hover:bg-gray-600 transition-colors">
                         {t('cancel')}
                     </button>
-                    <button onClick={handleSave} type="button" disabled={isSaving} className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600/80 hover:bg-indigo-700/80 disabled:opacity-50">
+                    <button onClick={handleSave} type="button" disabled={isSaving} className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 transition-colors">
                         {isSaving ? 'Saving...' : t('save')}
                     </button>
                 </div>

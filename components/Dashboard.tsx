@@ -107,12 +107,12 @@ const Dashboard: React.FC<DashboardProps> = ({ tasks = [], quizzes = [], notes =
                     </div>
 
                     {/* Main Cards Grid */}
-                    <div className="lg:col-span-7 grid grid-cols-1 md:grid-cols-3 gap-4 w-full">
+                    <div className="lg:col-span-7 grid grid-cols-1 md:grid-cols-3 gap-6 w-full">
                         {/* Today's Tasks */}
-                        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 flex flex-col border border-white/10 h-full">
+                        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm hover:shadow-md transition-shadow duration-300 p-6 flex flex-col border border-slate-200 dark:border-gray-700 h-full">
                             <div className="flex items-center justify-between mb-4">
-                                <h2 className="text-xl font-semibold text-gray-700 dark:text-gray-200">{t('todaysTasks')}</h2>
-                                <button onClick={() => openModal('tasks')} className="text-gray-400 hover:text-white p-1 rounded-full transition-colors">
+                                <h2 className="text-xl font-bold text-slate-800 dark:text-gray-100">{t('todaysTasks')}</h2>
+                                <button onClick={() => openModal('tasks')} className="text-slate-400 hover:text-indigo-600 dark:hover:text-white p-2 rounded-full hover:bg-slate-100 dark:hover:bg-gray-700 transition-all">
                                     {ICONS.plus}
                                 </button>
                             </div>
@@ -120,23 +120,26 @@ const Dashboard: React.FC<DashboardProps> = ({ tasks = [], quizzes = [], notes =
                                 {todaysTasks.length > 0 ? (
                                     <div className="space-y-3">
                                         {todaysTasks.map(task => (
-                                            <div key={task.id} className="flex items-center px-4 py-2 text-sm rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors justify-between">
-                                                <span className="text-gray-800 dark:text-gray-300">{task.title}</span>
+                                            <div key={task.id} className="flex items-center px-4 py-3 text-sm rounded-xl bg-slate-50 dark:bg-gray-700/50 hover:bg-slate-100 dark:hover:bg-gray-700 transition-colors justify-between border border-slate-100 dark:border-gray-600">
+                                                <span className="text-slate-700 dark:text-gray-200 font-medium">{task.title}</span>
                                                 <PriorityBadge priority={task.priority} />
                                             </div>
                                         ))}
                                     </div>
                                 ) : (
-                                    <p className="text-gray-500 dark:text-gray-400">{t('noTasksDueToday')}</p>
+                                    <div className="flex flex-col items-center justify-center h-full text-center py-6">
+                                        <p className="text-slate-400 dark:text-gray-500 mb-2 text-4xl">🎉</p>
+                                        <p className="text-slate-500 dark:text-gray-400 font-medium">{t('noTasksDueToday')}</p>
+                                    </div>
                                 )}
                             </div>
                         </div>
 
                         {/* Upcoming Quizzes */}
-                        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 flex flex-col border border-white/10 h-full">
+                        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm hover:shadow-md transition-shadow duration-300 p-6 flex flex-col border border-slate-200 dark:border-gray-700 h-full">
                             <div className="flex items-center justify-between mb-4">
-                                <h2 className="text-xl font-semibold text-gray-700 dark:text-gray-200">{t('upcomingQuizzes')}</h2>
-                                <button onClick={() => openModal('quizzes')} className="text-gray-400 hover:text-white p-1 rounded-full transition-colors">
+                                <h2 className="text-xl font-bold text-slate-800 dark:text-gray-100">{t('upcomingQuizzes')}</h2>
+                                <button onClick={() => openModal('quizzes')} className="text-slate-400 hover:text-indigo-600 dark:hover:text-white p-2 rounded-full hover:bg-slate-100 dark:hover:bg-gray-700 transition-all">
                                     {ICONS.plus}
                                 </button>
                             </div>
@@ -144,26 +147,32 @@ const Dashboard: React.FC<DashboardProps> = ({ tasks = [], quizzes = [], notes =
                                 {upcomingQuizzes.length > 0 ? (
                                     <div className="space-y-3">
                                         {upcomingQuizzes.map(quiz => (
-                                            <div key={quiz.id} className="flex items-center px-4 py-2 text-sm rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors justify-between">
+                                            <div key={quiz.id} className="flex items-center px-4 py-3 text-sm rounded-xl bg-slate-50 dark:bg-gray-700/50 hover:bg-slate-100 dark:hover:bg-gray-700 transition-colors justify-between border border-slate-100 dark:border-gray-600">
                                                 <div>
-                                                    <p className="font-medium text-gray-800 dark:text-gray-300">{quiz.subject}</p>
-                                                    <p className="text-sm text-gray-500 dark:text-gray-400">{new Date(quiz.date).toLocaleDateString()}</p>
+                                                    <p className="font-semibold text-slate-700 dark:text-gray-200">{quiz.subject}</p>
+                                                    <div className="flex items-center text-xs text-slate-500 dark:text-gray-400 mt-1">
+                                                        <span className="me-2">📅</span>
+                                                        {new Date(quiz.date).toLocaleDateString()}
+                                                    </div>
                                                 </div>
-                                                {quiz.materialsUrl && <a href={quiz.materialsUrl} target="_blank" rel="noopener noreferrer" className="text-indigo-600 hover:text-indigo-800 dark:text-indigo-400 dark:hover:text-indigo-300">{t('materials')}</a>}
+                                                {quiz.materialsUrl && <a href={quiz.materialsUrl} target="_blank" rel="noopener noreferrer" className="text-indigo-600 hover:text-indigo-800 dark:text-indigo-400 dark:hover:text-indigo-300 p-1">{t('materials')}</a>}
                                             </div>
                                         ))}
                                     </div>
                                 ) : (
-                                    <p className="text-gray-500 dark:text-gray-400">{t('noUpcomingQuizzes')}</p>
+                                    <div className="flex flex-col items-center justify-center h-full text-center py-6">
+                                        <p className="text-slate-400 dark:text-gray-500 mb-2 text-4xl">📚</p>
+                                        <p className="text-slate-500 dark:text-gray-400 font-medium">{t('noUpcomingQuizzes')}</p>
+                                    </div>
                                 )}
                             </div>
                         </div>
 
                         {/* Recent Notes */}
-                        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 flex flex-col border border-white/10 h-full">
+                        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm hover:shadow-md transition-shadow duration-300 p-6 flex flex-col border border-slate-200 dark:border-gray-700 h-full">
                             <div className="flex items-center justify-between mb-4">
-                                <h2 className="text-xl font-semibold text-gray-700 dark:text-gray-200">{t('recentNotes')}</h2>
-                                <button onClick={() => openModal('notes')} className="text-gray-400 hover:text-white p-1 rounded-full transition-colors">
+                                <h2 className="text-xl font-bold text-slate-800 dark:text-gray-100">{t('recentNotes')}</h2>
+                                <button onClick={() => openModal('notes')} className="text-slate-400 hover:text-indigo-600 dark:hover:text-white p-2 rounded-full hover:bg-slate-100 dark:hover:bg-gray-700 transition-all">
                                     {ICONS.plus}
                                 </button>
                             </div>
@@ -171,16 +180,19 @@ const Dashboard: React.FC<DashboardProps> = ({ tasks = [], quizzes = [], notes =
                                 {recentNotes.length > 0 ? (
                                     <div className="space-y-3">
                                         {recentNotes.map(note => (
-                                            <div key={note.id} className="flex items-center px-4 py-2 text-sm rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+                                            <div key={note.id} className="flex items-center px-4 py-3 text-sm rounded-xl bg-slate-50 dark:bg-gray-700/50 hover:bg-slate-100 dark:hover:bg-gray-700 transition-colors border border-slate-100 dark:border-gray-600">
                                                 <div>
-                                                    <p className="font-medium text-gray-800 dark:text-gray-300 truncate">{note.title}</p>
-                                                    <p className="text-sm text-gray-500 dark:text-gray-400">{note.subject}</p>
+                                                    <p className="font-semibold text-slate-700 dark:text-gray-200 truncate">{note.title}</p>
+                                                    <p className="text-xs text-slate-500 dark:text-gray-400 mt-1">{note.subject}</p>
                                                 </div>
                                             </div>
                                         ))}
                                     </div>
                                 ) : (
-                                    <p className="text-gray-500 dark:text-gray-400">{t('noNotesYet')}</p>
+                                    <div className="flex flex-col items-center justify-center h-full text-center py-6">
+                                        <p className="text-slate-400 dark:text-gray-500 mb-2 text-4xl">📝</p>
+                                        <p className="text-slate-500 dark:text-gray-400 font-medium">{t('noNotesYet')}</p>
+                                    </div>
                                 )}
                             </div>
                         </div>
@@ -190,18 +202,18 @@ const Dashboard: React.FC<DashboardProps> = ({ tasks = [], quizzes = [], notes =
                 {/* Right Column - Secondary Content (30% width) */}
                 <div className="lg:col-span-2 space-y-6">
                     {/* Study Streak */}
-                    <div className="bg-white/5 backdrop-blur-2xl rounded-xl shadow-[0_0_30px_rgba(249,115,22,0.15)] border border-orange-500/40 p-6 text-white">
+                    <div className="bg-white dark:bg-white/5 backdrop-blur-2xl rounded-2xl shadow-sm border border-orange-200 dark:border-orange-500/40 p-6 text-slate-800 dark:text-white">
                         <div className="text-center">
                             <div className="text-4xl mb-2">🔥</div>
-                            <h3 className="text-lg font-bold text-orange-100 mb-1">{t('studyStreak')}</h3>
-                            <p className="text-2xl font-bold text-orange-200">{streak}</p>
-                            <p className="text-sm text-orange-300">{streak === 1 ? t('daysInARow') : t('daysInARowPlural')}</p>
+                            <h3 className="text-lg font-bold text-orange-700 dark:text-orange-100 mb-1">{t('studyStreak')}</h3>
+                            <p className="text-2xl font-bold text-orange-600 dark:text-orange-200">{streak}</p>
+                            <p className="text-sm text-orange-600/80 dark:text-orange-300">{streak === 1 ? t('daysInARow') : t('daysInARowPlural')}</p>
                         </div>
                     </div>
 
                     {/* Task Progress Chart */}
-                    <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 border border-white/10">
-                        <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-200 mb-4 text-center">{t('taskProgress')}</h3>
+                    <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-slate-200 dark:border-gray-700 p-6">
+                        <h3 className="text-lg font-bold text-slate-800 dark:text-gray-200 mb-4 text-center">{t('taskProgress')}</h3>
                         <div className="flex justify-center">
                             <ResponsiveContainer width={180} height={180}>
                                 <PieChart>
@@ -212,6 +224,7 @@ const Dashboard: React.FC<DashboardProps> = ({ tasks = [], quizzes = [], notes =
                                         outerRadius={70}
                                         fill="#8884d8"
                                         dataKey="value"
+                                        stroke="none"
                                     >
                                         {taskCompletionData.map((entry, index) => (
                                             <Cell key={`cell-${index}`} fill={entry.color} />
@@ -223,13 +236,13 @@ const Dashboard: React.FC<DashboardProps> = ({ tasks = [], quizzes = [], notes =
                         {/* Legend */}
                         <div className="flex justify-center space-x-4 mt-4">
                             {taskCompletionData.map((entry, index) => (
-                                <div key={index} className="flex items-center space-x-1">
+                                <div key={index} className="flex items-center space-x-2">
                                     <div
-                                        className="w-3 h-3 rounded-full"
+                                        className="w-3 h-3 rounded-full ring-2 ring-white dark:ring-gray-800"
                                         style={{ backgroundColor: entry.color }}
                                     ></div>
-                                    <span className="text-gray-600 dark:text-gray-300 text-xs">
-                                        {entry.name}: {entry.value} ({totalTasks > 0 ? Math.round((entry.value / totalTasks) * 100) : 0}%)
+                                    <span className="text-slate-600 dark:text-gray-300 text-xs font-medium">
+                                        {entry.name}: {entry.value}
                                     </span>
                                 </div>
                             ))}

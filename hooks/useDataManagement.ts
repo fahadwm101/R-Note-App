@@ -26,7 +26,7 @@ export const useDataManagement = () => {
         }
 
         const qClasses = query(collection(db, 'classes'), where('userId', '==', user.uid));
-        const qTasks = query(collection(db, 'tasks'), where('userId', '==', user.uid), orderBy('createdAt', 'desc'));
+        const qTasks = query(collection(db, 'tasks'), where('userId', '==', user.uid));
         const qQuizzes = query(collection(db, 'quizzes'), where('userId', '==', user.uid));
         const qAssignments = query(collection(db, 'assignments'), where('userId', '==', user.uid));
         const qNotes = query(collection(db, 'notes'), where('userId', '==', user.uid));
@@ -44,7 +44,16 @@ export const useDataManagement = () => {
             setClasses(snapshot.docs.map(doc => ({ ...doc.data(), id: doc.id } as Class)));
         });
         const unsubTasks = onSnapshot(qTasks, (snapshot) => {
-            setTasks(snapshot.docs.map(doc => ({ ...doc.data(), id: doc.id } as Task)));
+            const fetchedTasks = snapshot.docs.map(doc => ({ ...doc.data(), id: doc.id } as Task));
+            // Client-side sort by createdAt desc
+            fetchedTasks.sort((a, b) => {
+                const dateA = new Date(a.createdAt || 0).getTime();
+                const dateB = new Date(b.createdAt || 0).getTime();
+                return dateB - dateA;
+            });
+            setTasks(fetchedTasks);
+        }, (error) => {
+            console.error("[DataManagement] Tasks Snapshot Error:", error);
         });
         const unsubQuizzes = onSnapshot(qQuizzes, (snapshot) => {
             setQuizzes(snapshot.docs.map(doc => ({ ...doc.data(), id: doc.id } as Quiz)));
@@ -97,7 +106,14 @@ export const useDataManagement = () => {
     };
 
     const handleSave = async (view: 'schedule' | 'tasks' | 'quizzes' | 'assignments' | 'notes', originalItem?: AnyItem, currentItem?: Partial<AnyItem>) => {
-        if (!user || !currentItem) return;
+        if (!user) {
+            console.error('[DataManagement] handleSave failed: User is not authenticated');
+            throw new Error('User is not authenticated');
+        }
+        if (!currentItem) {
+            console.error('[DataManagement] handleSave failed: Check currentItem is null');
+            return;
+        }
         console.log('handleSave called', { view, originalItem, currentItem });
 
         let collectionName = '';
@@ -116,17 +132,37 @@ export const useDataManagement = () => {
                 const startUpdate = { ...currentItem };
                 delete (startUpdate as any).id;
                 await updateDoc(docRef, startUpdate);
+                console.log(`[DataManagement] Successfully updated document in ${collectionName} with ID: ${originalItem.id}`);
             } else { // Add
                 // Add timestamp and userId
-                const newItem = {
+                const newItem: any = {
                     ...currentItem,
                     userId: user.uid,
                     createdAt: new Date().toISOString()
                 };
-                await addDoc(collection(db, collectionName), newItem);
+
+                // Enforce defaults for Tasks if missing
+                if (view === 'tasks') {
+                    if (typeof newItem.completed === 'undefined') newItem.completed = false;
+                    if (!newItem.priority) newItem.priority = Priority.Medium;
+                    if (!newItem.title) {
+                        console.error('[DataManagement] Task Title is MISSING. Aborting save.');
+                        throw new Error('Task title is required');
+                    }
+                }
+
+                console.log(`[DataManagement] Attempting to add document to ${collectionName}:`, newItem);
+
+                try {
+                    const docRef = await addDoc(collection(db, collectionName), newItem);
+                    console.log(`[DataManagement] Successfully added new document to ${collectionName} with ID: ${docRef.id}`);
+                } catch (innerError) {
+                    console.error(`[DataManagement] CRITICAL ERROR adding to ${collectionName}:`, innerError);
+                    throw innerError;
+                }
             }
         } catch (error) {
-            console.error("Error saving document: ", error);
+            console.error(`[DataManagement] Error saving document to ${collectionName}: `, error);
             throw error; // Re-throw to be caught by the UI
         }
     };

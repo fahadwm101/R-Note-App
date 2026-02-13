@@ -58,36 +58,36 @@ const Pomodoro: React.FC = () => {
     return (
         <div className="p-4 sm:p-6 lg:p-8">
             <h1 className="text-3xl font-bold text-gray-800 dark:text-white mb-6">{t('pomodoroTimer')}</h1>
-            <div className="max-w-md mx-auto bg-slate-900/40 backdrop-blur-xl border border-white/10 shadow-2xl rounded-[32px] p-8 text-center">
+            <div className="max-w-md mx-auto bg-white dark:bg-slate-900/60 backdrop-blur-xl border border-slate-200 dark:border-white/10 shadow-sm dark:shadow-2xl rounded-[32px] p-8 text-center transition-colors duration-300">
                 <div className="mb-6">
-                    <label className="block text-sm font-medium mb-2">{t('focusTask')}</label>
-                    <input type="text" placeholder={t('whatAreYouWorkingOn')} className="w-full p-2 border rounded text-black" />
+                    <label className="block text-sm font-bold text-slate-700 dark:text-gray-300 mb-2">{t('focusTask')}</label>
+                    <input type="text" placeholder={t('whatAreYouWorkingOn')} className="w-full p-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-xl text-slate-900 dark:text-white placeholder-slate-400 focus:ring-2 focus:ring-indigo-500 outline-none transition-all" />
                 </div>
-                <div className="relative mb-4">
-                    <svg className="w-56 h-56 mx-auto" viewBox="0 0 100 100">
-                        <circle cx="50" cy="50" r="45" stroke="rgba(255,255,255,0.1)" strokeWidth="5" fill="none" />
-                        <circle cx="50" cy="50" r="45" stroke="rgb(99,102,241)" strokeWidth="5" fill="none" strokeDasharray={`${progress * 283} 283`} strokeLinecap="round" className="shadow-[0_0_15px_rgba(99,102,241,0.5)]" transform="rotate(-90 50 50)" />
+                <div className="relative mb-8">
+                    <svg className="w-64 h-64 mx-auto" viewBox="0 0 100 100">
+                        <circle cx="50" cy="50" r="45" stroke="currentColor" strokeWidth="5" fill="none" className="text-slate-100 dark:text-white/5" />
+                        <circle cx="50" cy="50" r="45" stroke="rgb(99,102,241)" strokeWidth="5" fill="none" strokeDasharray={`${progress * 283} 283`} strokeLinecap="round" className="shadow-[0_0_15px_rgba(99,102,241,0.5)] transition-all duration-1000 ease-linear" transform="rotate(-90 50 50)" />
                     </svg>
-                    <div className="absolute inset-0 flex items-center justify-center">
-                        <span className="text-7xl font-mono font-bold text-white">{formatTime(timeLeft)}</span>
+                    <div className="absolute inset-0 flex flex-col items-center justify-center">
+                        <span className="text-6xl font-mono font-bold text-slate-800 dark:text-white tracking-tighter">{formatTime(timeLeft)}</span>
+                        <span className="text-sm font-medium text-slate-500 dark:text-gray-400 mt-2 uppercase tracking-widest">{isBreak ? t('breakTime') : t('workTime')}</span>
                     </div>
                 </div>
-                <div className="text-lg mb-4">{isBreak ? t('breakTime') : t('workTime')}</div>
-                <div className="text-sm text-gray-600 dark:text-gray-400 mb-8 flex items-center justify-center space-x-2">
-                    {Array.from({length: sessions}, (_, i) => <span key={i}>🍅</span>)}
-                    <span>{t('sessionsCompleted')}</span>
+                <div className="text-sm text-slate-600 dark:text-gray-400 mb-8 flex items-center justify-center space-x-2 bg-slate-50 dark:bg-white/5 py-2 px-4 rounded-full inline-flex">
+                    <span className="flex">{Array.from({ length: sessions }, (_, i) => <span key={i} className="text-lg">🍅</span>)}</span>
+                    <span className="font-medium">{sessions} {sessions === 1 ? 'Session' : 'Sessions'}</span>
                 </div>
 
                 <div className="flex justify-center space-x-4">
                     <button
                         onClick={toggleTimer}
-                        className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-bold py-3 px-8 rounded-full shadow-lg shadow-indigo-500/30 transition-all duration-300 transform hover:scale-105"
+                        className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-bold py-4 px-10 rounded-2xl shadow-lg shadow-indigo-500/30 transition-all duration-300 transform hover:scale-[1.02] active:scale-[0.98]"
                     >
                         {isActive ? t('pause') : t('start')}
                     </button>
                     <button
                         onClick={resetTimer}
-                        className="bg-gradient-to-r from-gray-600 to-gray-700 hover:from-gray-700 hover:to-gray-800 text-white font-bold py-3 px-8 rounded-full shadow-lg shadow-gray-500/30 transition-all duration-300 transform hover:scale-105"
+                        className="bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-600 dark:text-white font-bold py-4 px-6 rounded-2xl shadow-sm transition-all duration-300"
                     >
                         {t('reset')}
                     </button>

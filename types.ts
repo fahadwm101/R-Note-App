@@ -20,6 +20,7 @@ export interface Class {
   day: 'Monday' | 'Tuesday' | 'Wednesday' | 'Thursday' | 'Friday' | 'Saturday' | 'Sunday';
   color: string;
   instructor: string;
+  createdAt?: string;
 }
 
 export interface Task {
@@ -28,6 +29,7 @@ export interface Task {
   priority: Priority;
   completed: boolean;
   dueDate: string;
+  createdAt?: string;
 }
 
 export interface Quiz {
@@ -35,6 +37,7 @@ export interface Quiz {
   subject: string;
   date: string;
   materialsUrl?: string;
+  createdAt?: string;
 }
 
 export interface Assignment {
@@ -45,6 +48,7 @@ export interface Assignment {
   status: SubmissionStatus;
   file?: File;
   dueDate: string;
+  createdAt?: string;
 }
 
 export interface Note {
@@ -53,6 +57,7 @@ export interface Note {
   title: string;
   content: string;
   lastUpdated: string;
+  createdAt?: string;
 }
 
 export interface ChatMessage {
@@ -62,6 +67,6 @@ export interface ChatMessage {
 
 export type AnyItem = Class | Task | Quiz | Assignment | Note;
 export type ModalContent = {
-    view: 'schedule' | 'tasks' | 'quizzes' | 'assignments' | 'notes';
-    item?: AnyItem;
+  view: 'schedule' | 'tasks' | 'quizzes' | 'assignments' | 'notes';
+  item?: AnyItem;
 };

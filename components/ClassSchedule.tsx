@@ -81,24 +81,24 @@ const ClassSchedule: React.FC<ClassScheduleProps> = ({ classes, onDelete, onEdit
         </div>
       </div>
 
-      <div id="schedule-grid" className="bg-slate-900/60 backdrop-blur-xl border border-white/10 shadow-2xl rounded-[32px] overflow-x-auto p-4 relative">
+      <div id="schedule-grid" className="bg-white dark:bg-slate-900/60 backdrop-blur-xl border border-slate-200 dark:border-white/10 shadow-sm dark:shadow-2xl rounded-[32px] overflow-x-auto p-4 relative transition-colors duration-300">
         <div className="grid grid-cols-6 min-w-[1000px]">
           {/* Empty corner cell */}
-          <div className="bg-slate-900/60 z-10"></div>
+          <div className="bg-slate-50 dark:bg-slate-900/60 z-10 sticky left-0 top-0 border-b border-r border-slate-200 dark:border-white/20"></div>
           {/* Day headers */}
           {days.map((day, index) => (
-            <div key={day} className={`text-center font-semibold text-white py-3 border-b border-white/20 ${index === todayIndex ? 'bg-white/10' : 'bg-white/5'}`}>
+            <div key={day} className={`text-center font-bold text-slate-700 dark:text-white py-4 border-b border-slate-200 dark:border-white/20 ${index === todayIndex ? 'bg-indigo-50 dark:bg-white/10' : 'bg-slate-50 dark:bg-white/5'}`}>
               {day}
             </div>
           ))}
 
           {/* Time slots and schedule cells */}
-          {timeSlots.map(time => (
+          {timeSlots.map((time, timeIndex) => (
             <React.Fragment key={time}>
-              <div className="text-center text-sm text-white/70 pe-2 py-3 ltr:border-r rtl:border-l border-white/20 bg-slate-900/60 sticky left-0">
+              <div className={`text-center text-xs font-semibold text-slate-500 dark:text-white/70 pe-2 py-4 ltr:border-r rtl:border-l border-slate-200 dark:border-white/20 bg-slate-50 dark:bg-slate-900/60 sticky left-0 flex items-center justify-center ${timeIndex !== timeSlots.length - 1 ? 'border-b' : ''}`}>
                 {time}
               </div>
-              {originalDays.map(day => {
+              {originalDays.map((day, dayIndex) => {
                 const classItem = classes.find(c => {
                   if (c.day !== day) return false;
 
@@ -120,19 +120,19 @@ const ClassSchedule: React.FC<ClassScheduleProps> = ({ classes, onDelete, onEdit
                 });
 
                 return (
-                  <div key={`${day}-${time}`} className="border-b ltr:border-r rtl:border-l border-white/20 h-16 p-1 group relative">
+                  <div key={`${day}-${time}`} className={`border-b ltr:border-r rtl:border-l border-slate-100 dark:border-white/20 h-24 p-1 group relative transition-colors hover:bg-slate-50 dark:hover:bg-white/5`}>
                     {classItem && (
-                      <div className={`rounded p-2 h-full flex flex-col justify-between ${classItem.color}/20 backdrop-blur-sm text-white text-xs overflow-hidden`}>
+                      <div className={`rounded-xl p-3 h-full flex flex-col justify-between ${classItem.color} dark:bg-opacity-20 text-white shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden`}>
                         <div className="overflow-hidden">
-                          <p className="font-bold truncate">{classItem.subject}</p>
-                          <p className="truncate">{classItem.time}</p>
-                          <p className="text-gray-200 truncate">{classItem.instructor}</p>
+                          <p className="font-bold text-sm truncate leading-tight">{classItem.subject}</p>
+                          <p className="text-xs opacity-90 truncate mt-0.5">{classItem.time}</p>
+                          <p className="text-xs opacity-75 truncate mt-1">{classItem.instructor}</p>
                         </div>
-                        <div className="absolute bottom-1 end-1 flex space-x-1 opacity-0 group-hover:opacity-100 transition-opacity bg-black/50 p-1 rounded-full backdrop-blur-md">
-                          <button onClick={() => onEdit(classItem)} className="p-1 hover:text-indigo-400 text-white transition-colors">
+                        <div className="absolute top-2 end-2 flex space-x-1 opacity-0 group-hover:opacity-100 transition-opacity bg-white/20 backdrop-blur-md p-1 rounded-lg">
+                          <button onClick={() => onEdit(classItem)} className="p-1 hover:text-indigo-200 text-white transition-colors">
                             <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.5L16.732 3.732z" /></svg>
                           </button>
-                          <button onClick={() => onDelete(classItem.id)} className="p-1 hover:text-red-400 text-white transition-colors">
+                          <button onClick={() => onDelete(classItem.id)} className="p-1 hover:text-red-200 text-white transition-colors">
                             <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
                           </button>
                         </div>
