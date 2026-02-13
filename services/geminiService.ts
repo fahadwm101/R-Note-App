@@ -8,10 +8,12 @@ if (!apiKey) {
   console.warn("VITE_GEMINI_API_KEY environment variable not set.");
 }
 
-// إعداد الاتصال بالمكتبة الجديدة
-const genAI = new GoogleGenerativeAI(apiKey);
-
 export const getGeminiResponse = async (history: ChatMessage[], newMessage: string, language: Language, data: { tasks: Task[], classes: Class[], notes: Note[], assignments: Assignment[], quizzes: Quiz[] }): Promise<string> => {
+  if (!apiKey) {
+    return "عذراً، لم يتم إعداد مفتاح API. الرجاء التواصل مع الدعم الفني.";
+  }
+
+  const genAI = new GoogleGenerativeAI(apiKey);
   try {
     // استخدام الموديل المستقر
     const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });

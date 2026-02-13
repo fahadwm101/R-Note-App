@@ -30,13 +30,16 @@ const PriorityBadge: React.FC<{ priority: Priority }> = ({ priority }) => {
     );
 };
 
-const Dashboard: React.FC<DashboardProps> = ({ tasks, quizzes, notes, streak, openModal }) => {
+const Dashboard: React.FC<DashboardProps> = ({ tasks = [], quizzes = [], notes = [], streak = 0, openModal }) => {
     const { t, language } = useLanguage();
     const [showSuggestion, setShowSuggestion] = useState(false);
 
     useEffect(() => {
-        const upcomingQuizzes = quizzes.filter(q => {
+        const upcomingQuizzes = (quizzes || []).filter(q => {
+            if (!q.date) return false;
             const quizDate = new Date(q.date);
+            if (isNaN(quizDate.getTime())) return false;
+
             const tomorrow = new Date();
             tomorrow.setDate(tomorrow.getDate() + 1);
             const twoDaysFromNow = new Date();
@@ -47,31 +50,42 @@ const Dashboard: React.FC<DashboardProps> = ({ tasks, quizzes, notes, streak, op
 
         // Removed alert for upcoming quizzes
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
+    }, [quizzes]);
 
     const getSmartSuggestion = () => {
-        const incompleteTasks = tasks.filter(task => !task.completed);
+        const incompleteTasks = (tasks || []).filter(task => !task.completed);
         const sortedTasks = incompleteTasks.sort((a, b) => {
             // Priority: High > Medium > Low
             const priorityOrder = { High: 3, Medium: 2, Low: 1 };
             const priorityDiff = priorityOrder[b.priority] - priorityOrder[a.priority];
             if (priorityDiff !== 0) return priorityDiff;
             // Then by due date
-            return new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime();
+            const dateA = a.dueDate ? new Date(a.dueDate).getTime() : 0;
+            const dateB = b.dueDate ? new Date(b.dueDate).getTime() : 0;
+            return dateA - dateB;
         });
         return sortedTasks[0];
     };
 
     const suggestedTask = getSmartSuggestion();
 
-    const todaysTasks = tasks.filter(task => task.dueDate === today && !task.completed);
-    const upcomingQuizzes = quizzes.filter(quiz => new Date(quiz.date) >= new Date()).slice(0, 3);
-    const recentNotes = notes.sort((a, b) => new Date(b.lastUpdated).getTime() - new Date(a.lastUpdated).getTime()).slice(0, 3);
+    const todaysTasks = (tasks || []).filter(task => task.dueDate === today && !task.completed);
+    const upcomingQuizzes = (quizzes || []).filter(quiz => {
+        if (!quiz.date) return false;
+        const date = new Date(quiz.date);
+        return !isNaN(date.getTime()) && date >= new Date();
+    }).slice(0, 3);
 
-    const totalTasks = tasks.length;
+    const recentNotes = (notes || []).sort((a, b) => {
+        const timeA = a.lastUpdated ? new Date(a.lastUpdated).getTime() : 0;
+        const timeB = b.lastUpdated ? new Date(b.lastUpdated).getTime() : 0;
+        return timeB - timeA;
+    }).slice(0, 3);
+
+    const totalTasks = (tasks || []).length;
     const taskCompletionData = [
-        { name: t('completed'), value: tasks.filter(t => t.completed).length, color: '#10b981' },
-        { name: t('pending'), value: tasks.filter(t => !t.completed).length, color: '#f59e0b' }
+        { name: t('completed'), value: (tasks || []).filter(t => t.completed).length, color: '#10b981' },
+        { name: t('pending'), value: (tasks || []).filter(t => !t.completed).length, color: '#f59e0b' }
     ];
 
     return (

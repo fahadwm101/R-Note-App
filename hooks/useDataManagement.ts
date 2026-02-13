@@ -61,6 +61,9 @@ export const useDataManagement = () => {
                 const data = doc.data();
                 setStreak(data.streak || 0);
                 setLastStudyDate(data.lastStudyDate || null);
+            } else {
+                setStreak(0);
+                setLastStudyDate(null);
             }
         });
 

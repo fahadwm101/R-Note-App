@@ -35,21 +35,7 @@ const AppContent: React.FC = () => {
     const { user, loading } = useAuth();
     const navigate = useNavigate();
 
-    if (loading) {
-        return (
-            <div className="flex h-screen items-center justify-center bg-slate-950 text-white">
-                <div className="text-center">
-                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white mx-auto mb-4"></div>
-                    <p>Loading...</p>
-                </div>
-            </div>
-        );
-    }
-
-    if (!user) {
-        return <Login />;
-    }
-
+    // Hooks must be called unconditionally
     const [isSidebarOpen, setSidebarOpen] = useState(false);
     const { t } = useLanguage();
 
@@ -67,6 +53,21 @@ const AppContent: React.FC = () => {
             Notification.requestPermission();
         }
     }, []);
+
+    if (loading) {
+        return (
+            <div className="flex h-screen items-center justify-center bg-slate-950 text-white">
+                <div className="text-center">
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white mx-auto mb-4"></div>
+                    <p>Loading...</p>
+                </div>
+            </div>
+        );
+    }
+
+    if (!user) {
+        return <Login />;
+    }
 
     const handleSave = async () => {
         // Show visible alert
