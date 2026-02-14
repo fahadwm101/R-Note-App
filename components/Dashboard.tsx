@@ -1,15 +1,17 @@
 
 import React, { useEffect, useState } from 'react';
-import { Task, Quiz, Note, Priority, ModalContent } from '../types';
+import { Task, Quiz, Note, Assignment, Priority, ModalContent } from '../types';
 import { ICONS } from '../constants';
 import { useLanguage } from '../LanguageContext';
 import { PieChart, Pie, Cell, ResponsiveContainer } from 'recharts';
 import Layout from './Layout';
+import PageTour from './PageTour';
 
 interface DashboardProps {
     tasks: Task[];
     quizzes: Quiz[];
     notes: Note[];
+    assignments: Assignment[];
     streak: number;
     openModal: (view: ModalContent['view']) => void;
 }
@@ -30,7 +32,7 @@ const PriorityBadge: React.FC<{ priority: Priority }> = ({ priority }) => {
     );
 };
 
-const Dashboard: React.FC<DashboardProps> = ({ tasks = [], quizzes = [], notes = [], streak = 0, openModal }) => {
+const Dashboard: React.FC<DashboardProps> = ({ tasks = [], quizzes = [], notes = [], assignments = [], streak = 0, openModal }) => {
     const { t, language } = useLanguage();
     const [showSuggestion, setShowSuggestion] = useState(false);
 
@@ -76,10 +78,10 @@ const Dashboard: React.FC<DashboardProps> = ({ tasks = [], quizzes = [], notes =
         return !isNaN(date.getTime()) && date >= new Date();
     }).slice(0, 3);
 
-    const recentNotes = (notes || []).sort((a, b) => {
-        const timeA = a.lastUpdated ? new Date(a.lastUpdated).getTime() : 0;
-        const timeB = b.lastUpdated ? new Date(b.lastUpdated).getTime() : 0;
-        return timeB - timeA;
+    const upcomingAssignments = (assignments || []).sort((a, b) => {
+        const dateA = new Date(a.dueDate).getTime();
+        const dateB = new Date(b.dueDate).getTime();
+        return dateA - dateB;
     }).slice(0, 3);
 
     const totalTasks = (tasks || []).length;
@@ -90,6 +92,12 @@ const Dashboard: React.FC<DashboardProps> = ({ tasks = [], quizzes = [], notes =
 
     return (
         <Layout>
+            <PageTour
+                pageKey="dashboard"
+                title={t('tourDashboardTitle')}
+                description={t('tourDashboardDesc')}
+                features={t('tourDashboardFeatures').split(',')}
+            />
             {/* Main 2-Column Layout */}
             <div className="grid grid-cols-1 lg:grid-cols-7 gap-8">
                 {/* Left Column - Main Content (70% width) */}
@@ -168,30 +176,40 @@ const Dashboard: React.FC<DashboardProps> = ({ tasks = [], quizzes = [], notes =
                             </div>
                         </div>
 
-                        {/* Recent Notes */}
+                        {/* Upcoming Assignments */}
                         <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm hover:shadow-md transition-shadow duration-300 p-6 flex flex-col border border-slate-200 dark:border-gray-700 h-full">
                             <div className="flex items-center justify-between mb-4">
-                                <h2 className="text-xl font-bold text-slate-800 dark:text-gray-100">{t('recentNotes')}</h2>
-                                <button onClick={() => openModal('notes')} className="text-slate-400 hover:text-indigo-600 dark:hover:text-white p-2 rounded-full hover:bg-slate-100 dark:hover:bg-gray-700 transition-all">
+                                <h2 className="text-xl font-bold text-slate-800 dark:text-gray-100">{t('assignments')}</h2>
+                                <button onClick={() => openModal('assignments')} className="text-slate-400 hover:text-indigo-600 dark:hover:text-white p-2 rounded-full hover:bg-slate-100 dark:hover:bg-gray-700 transition-all">
                                     {ICONS.plus}
                                 </button>
                             </div>
                             <div className="flex-grow">
-                                {recentNotes.length > 0 ? (
+                                {upcomingAssignments.length > 0 ? (
                                     <div className="space-y-3">
-                                        {recentNotes.map(note => (
-                                            <div key={note.id} className="flex items-center px-4 py-3 text-sm rounded-xl bg-slate-50 dark:bg-gray-700/50 hover:bg-slate-100 dark:hover:bg-gray-700 transition-colors border border-slate-100 dark:border-gray-600">
+                                        {upcomingAssignments.map(assignment => (
+                                            <div key={assignment.id} className="flex items-center px-4 py-3 text-sm rounded-xl bg-slate-50 dark:bg-gray-700/50 hover:bg-slate-100 dark:hover:bg-gray-700 transition-colors justify-between border border-slate-100 dark:border-gray-600">
                                                 <div>
-                                                    <p className="font-semibold text-slate-700 dark:text-gray-200 truncate">{note.title}</p>
-                                                    <p className="text-xs text-slate-500 dark:text-gray-400 mt-1">{note.subject}</p>
+                                                    <p className="font-semibold text-slate-700 dark:text-gray-200 truncate">{assignment.title}</p>
+                                                    <div className="flex items-center text-xs text-slate-500 dark:text-gray-400 mt-1">
+                                                        <span className="me-1">{assignment.subject}</span>
+                                                        <span className="mx-1">•</span>
+                                                        <span>{new Date(assignment.dueDate).toLocaleDateString()}</span>
+                                                    </div>
                                                 </div>
+                                                <span className={`text-xs font-semibold px-2 py-1 rounded-full ${assignment.status === 'Submitted'
+                                                    ? 'bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300'
+                                                    : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/50 dark:text-yellow-300'
+                                                    }`}>
+                                                    {assignment.status === 'Submitted' ? t('submitted') : t('pending')}
+                                                </span>
                                             </div>
                                         ))}
                                     </div>
                                 ) : (
                                     <div className="flex flex-col items-center justify-center h-full text-center py-6">
                                         <p className="text-slate-400 dark:text-gray-500 mb-2 text-4xl">📝</p>
-                                        <p className="text-slate-500 dark:text-gray-400 font-medium">{t('noNotesYet')}</p>
+                                        <p className="text-slate-500 dark:text-gray-400 font-medium">{t('noPendingTasks')}</p>
                                     </div>
                                 )}
                             </div>

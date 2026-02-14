@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useLanguage } from '../LanguageContext';
+import PageTour from './PageTour';
 
 const Pomodoro: React.FC = () => {
     const { t } = useLanguage();
@@ -56,12 +57,18 @@ const Pomodoro: React.FC = () => {
     const progress = (totalTime - timeLeft) / totalTime;
 
     return (
-        <div className="p-4 sm:p-6 lg:p-8">
-            <h1 className="text-3xl font-bold text-gray-800 dark:text-white mb-6">{t('pomodoroTimer')}</h1>
+        <div className="flex flex-col items-center justify-center p-4 sm:p-6 lg:p-8 min-h-[calc(100vh-theme(spacing.16))]">
+            <PageTour
+                pageKey="pomodoro"
+                title={t('tourPomodoroTitle')}
+                description={t('tourPomodoroDesc')}
+                features={t('tourPomodoroFeatures').split(',')}
+            />
+            <h1 className="text-3xl font-bold text-gray-800 dark:text-white mb-8">{t('pomodoroTimer')}</h1>
             <div className="max-w-md mx-auto bg-white dark:bg-slate-900/60 backdrop-blur-xl border border-slate-200 dark:border-white/10 shadow-sm dark:shadow-2xl rounded-[32px] p-8 text-center transition-colors duration-300">
                 <div className="mb-6">
                     <label className="block text-sm font-bold text-slate-700 dark:text-gray-300 mb-2">{t('focusTask')}</label>
-                    <input type="text" placeholder={t('whatAreYouWorkingOn')} className="w-full p-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-xl text-slate-900 dark:text-white placeholder-slate-400 focus:ring-2 focus:ring-indigo-500 outline-none transition-all" />
+                    <input type="text" placeholder={t('whatAreYouWorkingOn')} className="w-full p-4 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-xl text-slate-900 dark:text-white placeholder-slate-400 focus:ring-2 focus:ring-indigo-500 outline-none transition-all" />
                 </div>
                 <div className="relative mb-8">
                     <svg className="w-64 h-64 mx-auto" viewBox="0 0 100 100">
@@ -75,7 +82,7 @@ const Pomodoro: React.FC = () => {
                 </div>
                 <div className="text-sm text-slate-600 dark:text-gray-400 mb-8 flex items-center justify-center space-x-2 bg-slate-50 dark:bg-white/5 py-2 px-4 rounded-full inline-flex">
                     <span className="flex">{Array.from({ length: sessions }, (_, i) => <span key={i} className="text-lg">🍅</span>)}</span>
-                    <span className="font-medium">{sessions} {sessions === 1 ? 'Session' : 'Sessions'}</span>
+                    <span className="font-medium">{sessions} {sessions === 1 ? t('session') : t('sessions')}</span>
                 </div>
 
                 <div className="flex justify-center space-x-4">

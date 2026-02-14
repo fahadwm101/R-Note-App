@@ -3,6 +3,7 @@ import React from 'react';
 import { Quiz } from '../types';
 import { ICONS } from '../constants';
 import { useLanguage } from '../LanguageContext';
+import PageTour from './PageTour';
 
 interface QuizzesProps {
   quizzes: Quiz[];
@@ -27,6 +28,12 @@ const Quizzes: React.FC<QuizzesProps> = ({ quizzes, onDelete, onEdit }) => {
 
   return (
     <div className="p-4 sm:p-6 lg:p-8">
+      <PageTour
+        pageKey="quizzes"
+        title={t('tourQuizzesTitle')}
+        description={t('tourQuizzesDesc')}
+        features={t('tourQuizzesFeatures').split(',')}
+      />
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold text-gray-800 dark:text-white">{t('quizzesAndExams')}</h1>
         <button onClick={() => onEdit()} className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-md inline-flex items-center">

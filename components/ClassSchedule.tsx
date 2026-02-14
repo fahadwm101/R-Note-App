@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { Class } from '../types';
 import { ICONS } from '../constants';
 import { useLanguage } from '../LanguageContext';
+import { useAuth } from '../src/context/AuthContext';
+import PageTour from './PageTour';
 
 declare global {
   interface Window {
@@ -23,6 +25,7 @@ const timeSlots = [
 
 const ClassSchedule: React.FC<ClassScheduleProps> = ({ classes, onDelete, onEdit }) => {
   const { t } = useLanguage();
+  const { user } = useAuth();
   const [currentTime, setCurrentTime] = useState(new Date());
 
   useEffect(() => {
@@ -64,8 +67,22 @@ const ClassSchedule: React.FC<ClassScheduleProps> = ({ classes, onDelete, onEdit
 
   return (
     <div className="p-4 sm:p-6 lg:p-8">
+      <PageTour
+        pageKey="schedule"
+        title={t('tourScheduleTitle')}
+        description={t('tourScheduleDesc')}
+        features={t('tourScheduleFeatures').split(',')}
+      />
       <div className="flex justify-end items-center mb-6">
         <div>
+          <button onClick={() => {
+            const url = `${window.location.origin}/share-schedule/${user?.uid}`;
+            navigator.clipboard.writeText(url);
+            alert(t('scheduleLinkCopied'));
+          }} className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 px-4 rounded-md inline-flex items-center me-2 shadow-lg shadow-emerald-500/20 transition-all">
+            {ICONS.share}
+            <span className="ms-2">{t('shareSchedule')}</span>
+          </button>
           <button onClick={handleExportPDF} className="bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-white font-bold py-2 px-4 rounded-md inline-flex items-center me-2">
             {ICONS.pdf}
             <span className="ms-2">{t('exportPdf')}</span>

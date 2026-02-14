@@ -3,6 +3,7 @@ import React from 'react';
 import { Assignment, SubmissionStatus } from '../types';
 import { ICONS } from '../constants';
 import { useLanguage } from '../LanguageContext';
+import PageTour from './PageTour';
 
 interface AssignmentsProps {
   assignments: Assignment[];
@@ -33,6 +34,12 @@ const Assignments: React.FC<AssignmentsProps> = ({ assignments, onDelete, onEdit
   };
   return (
     <div className="p-4 sm:p-6 lg:p-8">
+      <PageTour
+        pageKey="assignments"
+        title={t('tourAssignmentsTitle')}
+        description={t('tourAssignmentsDesc')}
+        features={t('tourAssignmentsFeatures').split(',')}
+      />
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold text-gray-800 dark:text-white">{t('assignments')}</h1>
         <button onClick={() => onEdit()} className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-md inline-flex items-center">

@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { Routes, Route, Navigate, useNavigate } from 'react-router-dom';
+import { Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom';
 import Header from './components/Header';
 import Sidebar from './components/Sidebar';
 import Dashboard from './components/Dashboard';
@@ -15,11 +15,14 @@ import SmartAssistant from './components/SmartAssistant';
 import Modal from './components/Modal';
 import FormField from './components/FormField';
 import Login from './src/components/Login';
+import PublicNoteView from './components/PublicNoteView';
+import PublicScheduleView from './components/PublicScheduleView';
 import { ModalContent, AnyItem, Class, Task, Quiz, Assignment, Note, Priority } from './types';
 import { useLanguage } from './LanguageContext';
 import { useDataManagement } from './hooks/useDataManagement';
 import { AuthProvider, useAuth } from './src/context/AuthContext';
 import { ThemeProvider } from './context/ThemeContext';
+import OfflineIndicator from './components/OfflineIndicator';
 
 const App: React.FC = () => {
     return (
@@ -34,6 +37,7 @@ const App: React.FC = () => {
 const AppContent: React.FC = () => {
     const { user, loading } = useAuth();
     const navigate = useNavigate();
+    const location = useLocation();
 
     // Hooks must be called unconditionally
     const [isSidebarOpen, setSidebarOpen] = useState(false);
@@ -54,6 +58,7 @@ const AppContent: React.FC = () => {
         }
     }, []);
 
+    // Hooks must be called unconditionally above, but we can verify auth state here
     if (loading) {
         return (
             <div className="flex h-screen items-center justify-center bg-slate-950 text-white">
@@ -62,6 +67,16 @@ const AppContent: React.FC = () => {
                     <p>Loading...</p>
                 </div>
             </div>
+        );
+    }
+
+    // Public Routes (No Auth Required)
+    if (location.pathname.startsWith('/share/') || location.pathname.startsWith('/share-schedule/')) {
+        return (
+            <Routes>
+                <Route path="/share/:noteId" element={<PublicNoteView />} />
+                <Route path="/share-schedule/:userId" element={<PublicScheduleView />} />
+            </Routes>
         );
     }
 
@@ -256,7 +271,7 @@ const AppContent: React.FC = () => {
                     <main className="flex-1 overflow-x-hidden overflow-y-auto m-2 sm:m-4">
                         <Routes>
                             <Route path="/" element={<Navigate to="/dashboard" replace />} />
-                            <Route path="/dashboard" element={<Dashboard tasks={tasks} quizzes={quizzes} notes={notes} streak={streak} openModal={openModal} />} />
+                            <Route path="/dashboard" element={<Dashboard tasks={tasks} quizzes={quizzes} notes={notes} assignments={assignments} streak={streak} openModal={openModal} />} />
                             <Route path="/schedule" element={<ClassSchedule classes={classes} onDelete={(id) => handleDelete(id, 'schedule')} onEdit={(item) => openModal('schedule', item)} />} />
                             <Route path="/tasks" element={<Tasks tasks={tasks} onToggleComplete={handleToggleTask} onDelete={(id) => handleDelete(id, 'tasks')} onEdit={(item) => openModal('tasks', item)} />} />
                             <Route path="/quizzes" element={<Quizzes quizzes={quizzes} onDelete={(id) => handleDelete(id, 'quizzes')} onEdit={(item) => openModal('quizzes', item)} />} />
@@ -281,7 +296,14 @@ const AppContent: React.FC = () => {
                 <SmartAssistant />
             </div>
 
-            <Modal isOpen={!!modalContent} onClose={closeModal} title={modalContent?.item ? t('editItem') : t('addNewItem')}>
+            <Modal isOpen={!!modalContent} onClose={closeModal} title={modalContent?.item ? t('editItem') : (
+                modalContent?.view === 'tasks' ? t('addNewTask') :
+                    modalContent?.view === 'quizzes' ? t('addNewQuiz') :
+                        modalContent?.view === 'assignments' ? t('addAssignment') :
+                            modalContent?.view === 'notes' ? t('addNewNote') :
+                                modalContent?.view === 'schedule' ? t('addClass') :
+                                    t('addNewItem')
+            )}>
                 {renderModalContent()}
                 <div className="mt-6 flex justify-end space-x-3">
                     <button onClick={closeModal} type="button" className="bg-white dark:bg-gray-700 border border-slate-300 dark:border-gray-600 rounded-md shadow-sm py-2 px-4 text-sm font-medium text-slate-700 dark:text-gray-200 hover:bg-slate-50 dark:hover:bg-gray-600 transition-colors">

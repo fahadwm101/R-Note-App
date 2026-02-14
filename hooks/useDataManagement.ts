@@ -247,6 +247,50 @@ export const useDataManagement = () => {
         return () => clearInterval(interval);
     }, [tasks]);
 
+    const getPublicNote = async (noteId: string): Promise<Note | null> => {
+        try {
+            const docRef = doc(db, 'notes', noteId);
+            const docSnap = await import('firebase/firestore').then(m => m.getDoc(docRef));
+
+            if (docSnap.exists()) {
+                return { ...docSnap.data(), id: docSnap.id } as Note;
+            } else {
+                return null;
+            }
+        } catch (error) {
+            console.error("Error fetching public note:", error);
+            return null;
+        }
+    };
+
+    const getPublicSchedule = async (userId: string): Promise<Class[]> => {
+        try {
+            const q = query(collection(db, 'classes'), where('userId', '==', userId));
+            const snapshot = await import('firebase/firestore').then(m => m.getDocs(q));
+            return snapshot.docs.map(doc => ({ ...doc.data(), id: doc.id } as Class));
+        } catch (error) {
+            console.error("Error fetching public schedule:", error);
+            return [];
+        }
+    };
+
+    const importSchedule = async (newClasses: Class[]) => {
+        if (!user) throw new Error("User must be logged in to import schedule.");
+        const batch = (await import('firebase/firestore')).writeBatch(db);
+
+        newClasses.forEach(cls => {
+            const docRef = doc(collection(db, 'classes'));
+            const { id, ...data } = cls; // Exclude original ID
+            batch.set(docRef, {
+                ...data,
+                userId: user.uid,
+                createdAt: new Date().toISOString()
+            });
+        });
+
+        await batch.commit();
+    };
+
     return {
         classes,
         tasks,
@@ -258,6 +302,9 @@ export const useDataManagement = () => {
         handleSave,
         handleToggleTask,
         handleNoteUpdate,
-        clearAllData
+        clearAllData,
+        getPublicNote,
+        getPublicSchedule,
+        importSchedule
     };
 };

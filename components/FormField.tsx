@@ -23,7 +23,7 @@ const FormField: React.FC<FormFieldProps> = ({
     required = false,
     rows = 3
 }) => {
-    const baseClasses = "mt-1 block w-full rounded-md border-slate-300 dark:border-gray-600/70 bg-white dark:bg-gray-700/60 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm text-slate-900 dark:text-white";
+    const baseClasses = "mt-1 block w-full rounded-md border-slate-300 dark:border-gray-600/70 bg-white dark:bg-gray-700/60 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-slate-900 dark:text-white py-3 px-4";
 
     return (
         <div className="mb-4">

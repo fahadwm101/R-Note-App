@@ -4,6 +4,7 @@ import { Task, Priority } from '../types';
 import { ICONS } from '../constants';
 import { useLanguage } from '../LanguageContext';
 import Layout from './Layout';
+import PageTour from './PageTour';
 
 declare global {
   interface Window {
@@ -72,7 +73,13 @@ const Tasks: React.FC<TasksProps> = ({ tasks, onToggleComplete, onDelete, onEdit
 
   return (
     <Layout>
-      <div className="flex justify-between items-center mb-6">
+      <PageTour
+        pageKey="tasks"
+        title={t('tourTasksTitle')}
+        description={t('tourTasksDesc')}
+        features={t('tourTasksFeatures').split(',')}
+      />
+      <div className="p-4 sm:p-6 lg:p-8 flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold text-slate-800 dark:text-white">{t('tasks')}</h1>
         <div className="flex flex-col sm:flex-row gap-2">
           <button onClick={() => onEdit()} className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-xl inline-flex items-center justify-center transition-colors shadow-sm">
