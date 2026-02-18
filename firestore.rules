@@ -25,9 +25,11 @@ service cloud.firestore {
     }
     
     // Notes collection
+    // Notes collection
     match /notes/{noteId} {
-      allow read, update, delete: if request.auth != null && 
-                           resource.data.userId == request.auth.uid;
+      allow read: if (request.auth != null && resource.data.userId == request.auth.uid) || 
+                  (resource.data.isPublic == true);
+      allow update, delete: if request.auth != null && resource.data.userId == request.auth.uid;
       allow create: if request.auth != null;
     }
     
@@ -41,8 +43,9 @@ service cloud.firestore {
     
     // Classes collection
     match /classes/{classId} {
-      allow read, update, delete: if request.auth != null && 
-                           resource.data.userId == request.auth.uid;
+      allow read: if (request.auth != null && resource.data.userId == request.auth.uid) || 
+                  (resource.data.isPublic == true);
+      allow update, delete: if request.auth != null && resource.data.userId == request.auth.uid;
       allow create: if request.auth != null;
     }
     
