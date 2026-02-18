@@ -8,14 +8,22 @@ import { useLanguage } from '../LanguageContext';
 import { useDataManagement } from '../hooks/useDataManagement';
 import Card from './ui/Card';
 
+import { Task, Class, Note, Assignment, Quiz } from '../types';
+
 interface SmartAssistantProps {
   isOpen?: boolean;
   onClose?: () => void;
+  tasks: Task[];
+  classes: Class[];
+  notes: Note[];
+  assignments: Assignment[];
+  quizzes: Quiz[];
 }
 
-const SmartAssistant: React.FC<SmartAssistantProps> = ({ isOpen: externalIsOpen, onClose: externalOnClose }) => {
+const SmartAssistant: React.FC<SmartAssistantProps> = ({ isOpen: externalIsOpen, onClose: externalOnClose, tasks, classes, notes, assignments, quizzes }) => {
   const { t, language } = useLanguage();
-  const { tasks, classes, notes, assignments, quizzes } = useDataManagement();
+  // Removed local useDataManagement hook call to prevent duplicate listeners
+  // const { tasks, classes, notes, assignments, quizzes } = useDataManagement();
   const [internalIsOpen, setInternalIsOpen] = useState(false);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState('');

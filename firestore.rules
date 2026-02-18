@@ -1,11 +1,79 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // ⚠️ DANGER: PUBLIC ACCESS ⚠️
-    // This allows ANYONE to read/write your database.
-    // Use this ONLY for debugging to confirm if the issue is Rules vs Connection.
+    // Default: deny all access
     match /{document=**} {
-      allow read, write: if true;
+      allow read, write: if false;
+    }
+    
+    // User-specific data: users can only access their own data
+    match /users/{userId} {
+      allow read, update, delete: if request.auth != null && request.auth.uid == userId;
+      allow create: if request.auth != null && request.auth.uid == userId;
+      
+      // User's subcollections (notes, tasks, etc.)
+      match /{subcollection}/{document=**} {
+        allow read, update, delete: if request.auth != null && request.auth.uid == userId;
+        allow create: if request.auth != null && request.auth.uid == userId;
+      }
+    }
+
+    // User Stats for Streak
+    match /user_stats/{userId} {
+      allow read, update, delete: if request.auth != null && request.auth.uid == userId;
+      allow create: if request.auth != null && request.auth.uid == userId;
+    }
+    
+    // Notes collection
+    match /notes/{noteId} {
+      allow read, update, delete: if request.auth != null && 
+                           resource.data.userId == request.auth.uid;
+      allow create: if request.auth != null;
+    }
+    
+    // Tasks collection
+    match /tasks/{taskId} {
+      allow read, update, delete: if request.auth != null && 
+                           resource.data.userId == request.auth.uid;
+      allow create: if request.auth != null && 
+                       request.resource.data.userId == request.auth.uid;
+    }
+    
+    // Classes collection
+    match /classes/{classId} {
+      allow read, update, delete: if request.auth != null && 
+                           resource.data.userId == request.auth.uid;
+      allow create: if request.auth != null;
+    }
+    
+    // Quizzes collection
+    match /quizzes/{quizId} {
+      allow read, update, delete: if request.auth != null && 
+                           resource.data.userId == request.auth.uid;
+      allow create: if request.auth != null;
+    }
+    
+    // Assignments collection
+    match /assignments/{assignmentId} {
+      allow read, update, delete: if request.auth != null && 
+                           resource.data.userId == request.auth.uid;
+      allow create: if request.auth != null;
+    }
+    
+    // Public shared notes: read-only for everyone, write for authenticated users
+    match /public/notes/{noteId} {
+      allow read: if true; // Anyone can read shared notes
+      allow update, delete: if request.auth != null && 
+                              resource.data.userId == request.auth.uid;
+      allow create: if request.auth != null;
+    }
+    
+    // Public shared schedules: read-only for everyone
+    match /public/schedules/{scheduleId} {
+      allow read: if true; // Anyone can read shared schedules
+      allow update, delete: if request.auth != null && 
+                              resource.data.userId == request.auth.uid;
+      allow create: if request.auth != null;
     }
   }
 }

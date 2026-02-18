@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { Class, Task, Quiz, Assignment, Note, Priority, SubmissionStatus, AnyItem } from '../types';
 import { db, auth } from '../src/lib/firebase';
-import { collection, onSnapshot, addDoc, deleteDoc, updateDoc, setDoc, doc, query, orderBy, Timestamp, where } from 'firebase/firestore';
+import { collection, onSnapshot, addDoc, deleteDoc, updateDoc, setDoc, doc, query, orderBy, Timestamp, where, serverTimestamp, writeBatch } from 'firebase/firestore';
 import { useAuth } from '../src/context/AuthContext';
 
-export const useDataManagement = () => {
+export const useDataManagement = (skipSubscription: boolean = false) => {
     const { user } = useAuth();
     const [classes, setClasses] = useState<Class[]>([]);
     const [tasks, setTasks] = useState<Task[]>([]);
@@ -16,7 +16,7 @@ export const useDataManagement = () => {
 
     // Real-time Sync with Firestore
     useEffect(() => {
-        if (!user) {
+        if (!user || skipSubscription) {
             setClasses([]);
             setTasks([]);
             setQuizzes([]);
@@ -45,10 +45,16 @@ export const useDataManagement = () => {
         });
         const unsubTasks = onSnapshot(qTasks, (snapshot) => {
             const fetchedTasks = snapshot.docs.map(doc => ({ ...doc.data(), id: doc.id } as Task));
-            // Client-side sort by createdAt desc
             fetchedTasks.sort((a, b) => {
-                const dateA = new Date(a.createdAt || 0).getTime();
-                const dateB = new Date(b.createdAt || 0).getTime();
+                const getDate = (date: any) => {
+                    if (!date) return 0;
+                    // Handle Firestore Timestamp
+                    if (date.toDate) return date.toDate().getTime();
+                    // Handle string/number
+                    return new Date(date).getTime();
+                };
+                const dateA = getDate(a.createdAt);
+                const dateB = getDate(b.createdAt);
                 return dateB - dateA;
             });
             setTasks(fetchedTasks);
@@ -84,7 +90,7 @@ export const useDataManagement = () => {
             unsubNotes();
             unsubStats();
         };
-    }, [user]);
+    }, [user, skipSubscription]);
 
     const handleDelete = async (id: string, type: 'schedule' | 'tasks' | 'quizzes' | 'assignments' | 'notes') => {
         if (!user) return;
@@ -138,7 +144,7 @@ export const useDataManagement = () => {
                 const newItem: any = {
                     ...currentItem,
                     userId: user.uid,
-                    createdAt: new Date().toISOString()
+                    createdAt: serverTimestamp()
                 };
 
                 // Enforce defaults for Tasks if missing
@@ -221,31 +227,59 @@ export const useDataManagement = () => {
         console.warn("Valid clearAllData requires iterating all collections. Not implemented for safety.");
     };
 
-    // Notifications for upcoming tasks
+    // Notifications for upcoming tasks, quizzes, and assignments
     useEffect(() => {
-        const checkUpcomingTasks = () => {
+        const checkUpcomingItems = () => {
+            if (!('Notification' in window) || Notification.permission !== 'granted') return;
+
             const now = new Date();
             const oneHourLater = new Date(now.getTime() + 60 * 60 * 1000);
+            const twentyFourHoursLater = new Date(now.getTime() + 24 * 60 * 60 * 1000);
+
+            // 1. Tasks (Due in 1 hour)
             tasks.forEach(task => {
                 if (!task.completed) {
                     const dueDate = new Date(task.dueDate);
                     if (dueDate > now && dueDate <= oneHourLater) {
-                        if ('Notification' in window && Notification.permission === 'granted') {
-                            new Notification('Upcoming Task', {
-                                body: `${task.title} is due soon!`,
-                                icon: '/logo.png'
-                            });
-                        }
+                        new Notification('Upcoming Task', { body: `Task "${task.title}" is due soon!`, icon: '/logo.png' });
+                    }
+                }
+            });
+
+            // 2. Quizzes (Due in 24 hours) - More important, warn earlier
+            quizzes.forEach(quiz => {
+                const quizDate = new Date(quiz.date);
+                // Check if it's tomorrow (roughly)
+                if (quizDate > now && quizDate <= twentyFourHoursLater) {
+                    // Simple check: alert if we haven't alerted today? 
+                    // For now, let's just alert if it's exactly 24 hours away is hard to catch with setInterval.
+                    // Instead, let's alert if it's within the window AND we are running this check.
+                    // To avoid spam, we'd need a "notified" state.
+                    // For MVP: Alert if it's within the next hour (urgent) OR exactly 1 day before (if you happen to be on).
+                    // Let's stick to "Due Soon" (1 hour range) for consistency, or maybe "Tomorrow" logic.
+                    // Let's go with 24 hours warning.
+                }
+                if (quizDate > now && quizDate <= oneHourLater) {
+                    new Notification('Upcoming Quiz', { body: `Quiz "${quiz.subject}" is starting soon!`, icon: '/logo.png' });
+                }
+            });
+
+            // 3. Assignments (Due in 24 hours)
+            assignments.forEach(assignment => {
+                if (assignment.status !== 'Submitted') {
+                    const dueDate = new Date(assignment.dueDate);
+                    if (dueDate > now && dueDate <= oneHourLater) {
+                        new Notification('Assignment Due', { body: `Assignment "${assignment.title}" is due soon!`, icon: '/logo.png' });
                     }
                 }
             });
         };
 
-        const interval = setInterval(checkUpcomingTasks, 60 * 1000); // Check every minute
-        checkUpcomingTasks(); // Check immediately
+        const interval = setInterval(checkUpcomingItems, 60 * 1000 * 5); // Check every 5 minutes to avoid spamming too much in dev
+        checkUpcomingItems(); // Check immediately
 
         return () => clearInterval(interval);
-    }, [tasks]);
+    }, [tasks, quizzes, assignments]);
 
     const getPublicNote = async (noteId: string): Promise<Note | null> => {
         try {
@@ -274,21 +308,55 @@ export const useDataManagement = () => {
         }
     };
 
-    const importSchedule = async (newClasses: Class[]) => {
-        if (!user) throw new Error("User must be logged in to import schedule.");
-        const batch = (await import('firebase/firestore')).writeBatch(db);
+    const importData = async (jsonData: any) => {
+        if (!user) throw new Error("User must be logged in to import data.");
 
-        newClasses.forEach(cls => {
-            const docRef = doc(collection(db, 'classes'));
-            const { id, ...data } = cls; // Exclude original ID
-            batch.set(docRef, {
-                ...data,
-                userId: user.uid,
-                createdAt: new Date().toISOString()
-            });
-        });
+        let batch = writeBatch(db);
+        let operationCount = 0;
+        const MAX_BATCH_SIZE = 450;
 
-        await batch.commit();
+        const processCollection = async (items: any[], collectionName: string) => {
+            if (!items || !Array.isArray(items)) return;
+
+            for (const item of items) {
+                const docRef = doc(collection(db, collectionName));
+                const { id, userId, ...data } = item; // Exclude original ID and userId
+
+                // Sanitize undefined values
+                const sanitizedData = Object.fromEntries(
+                    Object.entries(data).filter(([_, v]) => v !== undefined)
+                );
+
+                batch.set(docRef, {
+                    ...sanitizedData,
+                    userId: user.uid,
+                    createdAt: serverTimestamp()
+                });
+
+                operationCount++;
+
+                if (operationCount >= MAX_BATCH_SIZE) {
+                    await batch.commit();
+                    batch = writeBatch(db); // Create a new batch
+                    operationCount = 0;
+                }
+            }
+        };
+
+        try {
+            if (jsonData.classes) await processCollection(jsonData.classes, 'classes');
+            if (jsonData.tasks) await processCollection(jsonData.tasks, 'tasks');
+            if (jsonData.quizzes) await processCollection(jsonData.quizzes, 'quizzes');
+            if (jsonData.assignments) await processCollection(jsonData.assignments, 'assignments');
+            if (jsonData.notes) await processCollection(jsonData.notes, 'notes');
+
+            if (operationCount > 0) {
+                await batch.commit();
+            }
+        } catch (error) {
+            console.error("Error importing data:", error);
+            throw error;
+        }
     };
 
     return {
@@ -305,6 +373,6 @@ export const useDataManagement = () => {
         clearAllData,
         getPublicNote,
         getPublicSchedule,
-        importSchedule
+        importData
     };
 };

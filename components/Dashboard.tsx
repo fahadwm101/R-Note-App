@@ -1,5 +1,6 @@
 
 import React, { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { Task, Quiz, Note, Assignment, Priority, ModalContent } from '../types';
 import { ICONS } from '../constants';
 import { useLanguage } from '../LanguageContext';
@@ -264,6 +265,15 @@ const Dashboard: React.FC<DashboardProps> = ({ tasks = [], quizzes = [], notes =
                                     </span>
                                 </div>
                             ))}
+                        </div>
+
+                        <div className="mt-6 text-center border-t border-slate-100 dark:border-gray-700 pt-4">
+                            <Link to="/analytics" className="inline-flex items-center text-sm font-semibold text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 transition-colors group">
+                                {ICONS.analytics}
+                                <span className="ms-2 group-hover:underline">
+                                    {t('analytics') || 'View Analytics'}
+                                </span>
+                            </Link>
                         </div>
                     </div>
                 </div>

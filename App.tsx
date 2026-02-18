@@ -11,10 +11,14 @@ import Assignments from './components/Assignments';
 import Notes from './components/Notes';
 import ProfileSettings from './components/ProfileSettings';
 import Pomodoro from './components/Pomodoro';
+import CalendarView from './components/CalendarView';
+import Analytics from './components/Analytics';
 import SmartAssistant from './components/SmartAssistant';
 import Modal from './components/Modal';
 import FormField from './components/FormField';
 import Login from './src/components/Login';
+import ResetPassword from './src/components/ResetPassword';
+import ProtectedRoute from './src/components/ProtectedRoute';
 import PublicNoteView from './components/PublicNoteView';
 import PublicScheduleView from './components/PublicScheduleView';
 import { ModalContent, AnyItem, Class, Task, Quiz, Assignment, Note, Priority } from './types';
@@ -71,11 +75,12 @@ const AppContent: React.FC = () => {
     }
 
     // Public Routes (No Auth Required)
-    if (location.pathname.startsWith('/share/') || location.pathname.startsWith('/share-schedule/')) {
+    if (location.pathname.startsWith('/share/') || location.pathname.startsWith('/share-schedule/') || location.pathname === '/reset-password') {
         return (
             <Routes>
                 <Route path="/share/:noteId" element={<PublicNoteView />} />
                 <Route path="/share-schedule/:userId" element={<PublicScheduleView />} />
+                <Route path="/reset-password" element={<ResetPassword />} />
             </Routes>
         );
     }
@@ -99,12 +104,10 @@ const AppContent: React.FC = () => {
         alert.style.fontWeight = 'bold';
         document.body.appendChild(alert);
 
-        console.log('=== handleSave function CALLED in App.tsx ===');
-        console.log('modalContent:', modalContent);
-        console.log('currentItem (raw):', currentItem);
-
         if (!modalContent || !currentItem) {
-            console.error('Validation failed: missing modalContent or currentItem');
+            if (process.env.NODE_ENV !== 'production') {
+                console.error('Validation failed: missing modalContent or currentItem');
+            }
             alert.textContent = 'Error: Missing data';
             alert.style.background = '#dc2626';
             setTimeout(() => alert.remove(), 3000);
@@ -114,9 +117,7 @@ const AppContent: React.FC = () => {
         setIsSaving(true);
         try {
             const { view, item: originalItem } = modalContent;
-            console.log('Calling saveData with:', { view, originalItem, currentItem });
             await saveData(view, originalItem, currentItem);
-            console.log('Save data returned successfully');
 
             alert.textContent = 'Saved successfully!';
             setTimeout(() => {
@@ -124,7 +125,9 @@ const AppContent: React.FC = () => {
                 closeModal();
             }, 1500);
         } catch (error: any) {
-            console.error('Failed to save item (caught in App.tsx):', error);
+            if (process.env.NODE_ENV !== 'production') {
+                console.error('Failed to save item:', error);
+            }
             alert.textContent = `Error: ${error.message || 'Unknown error'}`;
             alert.style.background = '#dc2626';
             setTimeout(() => alert.remove(), 5000);
@@ -136,9 +139,6 @@ const AppContent: React.FC = () => {
 
     // --- Modal Logic ---
     const openModal = (view: ModalContent['view'], item?: AnyItem) => {
-        console.log('=== openModal function called ===');
-        console.log('view:', view);
-        console.log('item:', item);
         setModalContent({ view, item });
         if (view === 'schedule') {
             // If no item is provided (adding new class), use empty values
@@ -155,7 +155,6 @@ const AppContent: React.FC = () => {
         } else {
             setCurrentItem(item || (view === 'notes' ? { title: '', subject: '', content: '' } : {}));
         }
-        console.log('=== Modal state updated ===');
     };
 
     const closeModal = () => {
@@ -272,12 +271,14 @@ const AppContent: React.FC = () => {
                         <Routes>
                             <Route path="/" element={<Navigate to="/dashboard" replace />} />
                             <Route path="/dashboard" element={<Dashboard tasks={tasks} quizzes={quizzes} notes={notes} assignments={assignments} streak={streak} openModal={openModal} />} />
-                            <Route path="/schedule" element={<ClassSchedule classes={classes} onDelete={(id) => handleDelete(id, 'schedule')} onEdit={(item) => openModal('schedule', item)} />} />
+                            <Route path="/schedule" element={<ClassSchedule classes={classes} tasks={tasks} quizzes={quizzes} assignments={assignments} onDelete={(id) => handleDelete(id, 'schedule')} onEdit={(item) => openModal('schedule', item)} />} />
                             <Route path="/tasks" element={<Tasks tasks={tasks} onToggleComplete={handleToggleTask} onDelete={(id) => handleDelete(id, 'tasks')} onEdit={(item) => openModal('tasks', item)} />} />
                             <Route path="/quizzes" element={<Quizzes quizzes={quizzes} onDelete={(id) => handleDelete(id, 'quizzes')} onEdit={(item) => openModal('quizzes', item)} />} />
                             <Route path="/assignments" element={<Assignments assignments={assignments} onDelete={(id) => handleDelete(id, 'assignments')} onEdit={(item) => openModal('assignments', item)} />} />
                             <Route path="/notes" element={<Notes notes={notes} onAdd={() => openModal('notes')} onUpdate={handleNoteUpdate} onDelete={(id) => handleDelete(id, 'notes')} />} />
                             <Route path="/pomodoro" element={<Pomodoro />} />
+
+                            <Route path="/analytics" element={<Analytics tasks={tasks} quizzes={quizzes} assignments={assignments} classes={classes} streak={streak} />} />
                             <Route path="/profile" element={
                                 <ProfileSettings
                                     tasks={tasks}
@@ -293,7 +294,13 @@ const AppContent: React.FC = () => {
                     </main>
                 </div>
                 {isSidebarOpen && <div onClick={() => setSidebarOpen(false)} className="fixed inset-0 bg-black opacity-50 z-30 lg:hidden"></div>}
-                <SmartAssistant />
+                <SmartAssistant
+                    tasks={tasks}
+                    classes={classes}
+                    notes={notes}
+                    assignments={assignments}
+                    quizzes={quizzes}
+                />
             </div>
 
             <Modal isOpen={!!modalContent} onClose={closeModal} title={modalContent?.item ? t('editItem') : (

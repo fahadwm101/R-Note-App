@@ -3,6 +3,8 @@ import { useLanguage } from '../LanguageContext';
 import { useTheme } from '../context/ThemeContext';
 import { useAuth } from '../src/context/AuthContext';
 
+import { useDataManagement } from '../hooks/useDataManagement';
+
 import { Task, Class, Note, Assignment, Quiz } from '../types';
 import PageTour from './PageTour';
 
@@ -20,6 +22,16 @@ const ProfileSettings: React.FC<ProfileSettingsProps> = ({ tasks, classes, notes
     const { theme, toggleTheme } = useTheme();
     // Removed local useDataManagement hook call to avoid state desync
     const { logOut, user } = useAuth();
+    // Use the hook to get importData
+    // We need to pass empty props or mock them if we use useDataManagement here? 
+    // Actually, useDataManagement doesn't take props.
+    // However, ProfileSettings receives data as props.
+    // We only need importData from the hook.
+    // BUT call it here might cause double subscription? 
+    // Yes, but for import it's fine.
+    // Yes, but for import it's fine.
+    const { importData } = useDataManagement(true);
+
     const [avatar, setAvatar] = React.useState<string>(user?.photoURL || '/logo.png');
     const [studentName, setStudentName] = React.useState<string>(user?.displayName || 'Student');
     const [imageError, setImageError] = React.useState<boolean>(false);
@@ -65,9 +77,35 @@ const ProfileSettings: React.FC<ProfileSettingsProps> = ({ tasks, classes, notes
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = 'rnote-data.json';
+        a.download = `rnote-backup-${new Date().toISOString().slice(0, 10)}.json`;
         a.click();
         URL.revokeObjectURL(url);
+    };
+
+    const handleImportClick = () => {
+        document.getElementById('import-file')?.click();
+    };
+
+    const handleImportFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        try {
+            const text = await file.text();
+            const data = JSON.parse(text);
+
+            if (window.confirm(t('confirmImport'))) {
+                await importData(data);
+                alert(t('importSuccess'));
+            }
+        } catch (error: any) {
+            console.error('Import failed:', error);
+            const errorMessage = error.message || 'Unknown error';
+            alert(`${t('importFailed')}\nDetails: ${errorMessage}`);
+        } finally {
+            // Reset input
+            e.target.value = '';
+        }
     };
 
     return (
@@ -174,6 +212,35 @@ const ProfileSettings: React.FC<ProfileSettingsProps> = ({ tasks, classes, notes
                 <div className="border-t border-slate-100 dark:border-white/10 pt-6 mb-6">
                     <h2 className="text-lg font-bold text-slate-800 dark:text-white mb-4">{t('dataManagement') || 'Data Management'}</h2>
                     <div className="space-y-4">
+                        <div className="grid grid-cols-2 gap-4">
+                            <button
+                                onClick={exportData}
+                                className="bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-900/20 dark:hover:bg-indigo-900/40 text-indigo-600 dark:text-indigo-400 font-bold py-3 px-4 rounded-xl transition-colors flex items-center justify-center border border-indigo-100 dark:border-indigo-900/30 gap-2"
+                            >
+                                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                                </svg>
+                                {t('exportData')}
+                            </button>
+
+                            <button
+                                onClick={handleImportClick}
+                                className="bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-900/20 dark:hover:bg-emerald-900/40 text-emerald-600 dark:text-emerald-400 font-bold py-3 px-4 rounded-xl transition-colors flex items-center justify-center border border-emerald-100 dark:border-emerald-900/30 gap-2"
+                            >
+                                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                                </svg>
+                                {t('importData')}
+                            </button>
+                            <input
+                                type="file"
+                                id="import-file"
+                                className="hidden"
+                                accept=".json"
+                                onChange={handleImportFile}
+                            />
+                        </div>
+
                         <button
                             onClick={() => {
                                 if (window.confirm('Are you sure you want to delete ALL data? This action cannot be undone.')) {
@@ -186,10 +253,12 @@ const ProfileSettings: React.FC<ProfileSettingsProps> = ({ tasks, classes, notes
                             <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                             </svg>
-                            <span className="ms-2">{t('deleteAllData') || 'Delete All Data'}</span>
+                            <span className="ms-2">{t('deleteAllData')}</span>
                         </button>
                     </div>
                 </div>
+
+
 
                 <div className="border-t border-slate-100 dark:border-white/10 pt-6">
                     <button onClick={logOut} className="w-full bg-slate-100 hover:bg-slate-200 dark:bg-white/10 dark:hover:bg-white/20 text-slate-700 dark:text-white font-bold py-3 px-4 rounded-xl transition-colors">
