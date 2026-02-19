@@ -4,6 +4,7 @@ import { ICONS } from '../constants';
 import { useLanguage } from '../LanguageContext';
 import { useAuth } from '../src/context/AuthContext';
 import { IS_RAMADAN } from '../src/config/theme';
+import { usePWAInstall } from '../src/hooks/usePWAInstall';
 
 interface SidebarProps {
     isOpen: boolean;
@@ -14,6 +15,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen }) => {
     const { user } = useAuth();
     const location = useLocation();
     const currentView = location.pathname.substring(1) || 'dashboard';
+    const { isInstallable, install } = usePWAInstall();
     const [avatar, setAvatar] = React.useState<string>(user?.photoURL || '/logo.png');
     const [studentName, setStudentName] = React.useState<string>(user?.displayName || 'Student');
     const [imageError, setImageError] = React.useState<boolean>(false);
@@ -104,8 +106,23 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen }) => {
                     </Link>
                 ))}
             </nav>
-            <div className="mt-auto py-4 text-center">
-                <p className="text-xs text-slate-400 dark:text-gray-600 mb-2">v2.0.0</p>
+            <div className="mt-auto py-4 px-4 text-center space-y-3">
+                {/* PWA Install Button - only shows when installable */}
+                {isInstallable && (
+                    <button
+                        onClick={install}
+                        className={`w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all duration-300 ${IS_RAMADAN
+                                ? 'bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/40 hover:border-amber-400 hover:shadow-[0_0_12px_rgba(251,191,36,0.2)]'
+                                : 'bg-indigo-600 hover:bg-indigo-500 text-white shadow-md hover:shadow-indigo-500/40 dark:bg-indigo-500/20 dark:hover:bg-indigo-500/30 dark:text-indigo-300 dark:border dark:border-indigo-500/40'
+                            }`}
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                        </svg>
+                        {language === 'ar' ? 'تثبيت التطبيق' : 'Install App'}
+                    </button>
+                )}
+                <p className="text-xs text-slate-400 dark:text-gray-600">v2.0.0</p>
                 <div className="text-[10px] text-slate-500 dark:text-gray-500">
                     Built with <span className="text-red-500">♥</span> by <a href="https://fahadwm101.github.io/FAHAD.GITHUP/" target="_blank" rel="noopener noreferrer" className="font-bold hover:text-indigo-600 dark:hover:text-indigo-400 hover:underline transition-colors">CHEETAH</a>
                 </div>
