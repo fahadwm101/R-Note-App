@@ -5,6 +5,7 @@ import { ChatMessage } from '../types';
 import { getGeminiResponse } from '../services/geminiService';
 import { marked } from 'marked';
 import { useLanguage } from '../LanguageContext';
+import { IS_RAMADAN } from '../src/config/theme';
 import { useDataManagement } from '../hooks/useDataManagement';
 import Card from './ui/Card';
 
@@ -67,9 +68,9 @@ const SmartAssistant: React.FC<SmartAssistantProps> = ({ isOpen: externalIsOpen,
   if (externalIsOpen !== undefined) {
     // Sidebar mode
     return (
-      <div className="h-full flex flex-col bg-white dark:bg-gray-800">
+      <div className={`h-full flex flex-col ${IS_RAMADAN ? 'bg-slate-900/80 backdrop-blur-xl' : 'bg-white dark:bg-gray-800'}`}>
         <header className="p-4 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
-          <h2 className="text-xl font-bold text-gray-800 dark:text-white flex items-center">
+          <h2 className={`text-xl font-bold flex items-center ${IS_RAMADAN ? 'text-gold-gradient' : 'text-gray-800 dark:text-white'}`}>
             {ICONS.ai} <span className="ms-2">{t('smartAssistant')}</span>
           </h2>
           <button
@@ -110,7 +111,7 @@ const SmartAssistant: React.FC<SmartAssistantProps> = ({ isOpen: externalIsOpen,
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyPress={handleKeyPress}
-              placeholder={t('askForStudyTips')}
+              placeholder={t('askForStudyTips') || "Ramadan Kareem! Ask me anything..."}
               className="w-full bg-transparent p-3 focus:outline-none text-gray-800 dark:text-white"
               disabled={isLoading}
             />
@@ -138,10 +139,10 @@ const SmartAssistant: React.FC<SmartAssistantProps> = ({ isOpen: externalIsOpen,
         <div className="fixed inset-0 bg-black bg-opacity-30 z-50 flex justify-center items-end sm:items-center p-4">
           <div className="relative w-full max-w-lg h-[80vh]">
             {/* RGB Glow Background */}
-            <div className="absolute inset-0 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 opacity-50 blur-2xl rounded-[32px] animate-pulse"></div>
-            <Card className="relative w-full h-full flex flex-col p-0">
+            <div className={`absolute inset-0 opacity-50 blur-2xl rounded-[32px] animate-pulse ${IS_RAMADAN ? 'bg-gradient-to-r from-emerald-900 via-amber-700 to-emerald-900' : 'bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500'}`}></div>
+            <Card className="relative w-full h-full flex flex-col p-0 theme-transition">
               <header className="p-4 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
-                <h2 className="text-xl font-bold text-gray-800 dark:text-white flex items-center">
+                <h2 className={`text-xl font-bold flex items-center ${IS_RAMADAN ? 'text-gold-gradient' : 'text-gray-800 dark:text-white'}`}>
                   {ICONS.ai} <span className="ms-2">{t('smartAssistant')}</span>
                 </h2>
                 <button

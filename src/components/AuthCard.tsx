@@ -332,6 +332,21 @@ const AuthCard: React.FC = () => {
                     </div>
                 </motion.div>
             </AnimatePresence>
+
+            {/* Copyright Footer */}
+            <div className="mt-6 text-center">
+                <p className="text-white/30 text-[11px] tracking-widest uppercase font-light">
+                    © {new Date().getFullYear()} All rights reserved &mdash;{' '}
+                    <a
+                        href="https://r-i-s-e.vercel.app"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-purple-400/60 hover:text-purple-300 transition-colors duration-200 font-medium tracking-wider"
+                    >
+                        R.I.S.E Team
+                    </a>
+                </p>
+            </div>
         </div >
     );
 };

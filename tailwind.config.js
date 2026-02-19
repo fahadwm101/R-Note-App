@@ -8,31 +8,52 @@ export default {
   darkMode: 'class',
   theme: {
     extend: {
-      animation: {
-        first: "moveVertical 30s ease infinite",
-        second: "moveInCircle 20s reverse infinite",
-        third: "moveInCircle 40s linear infinite",
-        fourth: "moveHorizontal 40s ease infinite",
-        fifth: "moveInCircle 20s ease infinite",
-      },
-      keyframes: {
-        moveHorizontal: {
-          "0%": { transform: "translateX(-50%) translateY(-10%)" },
-          "50%": { transform: "translateX(50%) translateY(10%)" },
-          "100%": { transform: "translateX(-50%) translateY(-10%)" },
+      colors: {
+        gold: {
+          500: '#D4AF37',
+          400: '#E5C158',
+          600: '#B5952B',
         },
-        moveVertical: {
-          "0%": { transform: "translateY(-50%)" },
-          "50%": { transform: "translateY(50%)" },
-          "100%": { transform: "translateY(-50%)" },
+        emerald: {
+          900: '#064E3B',
+          800: '#065F46',
         },
-        moveInCircle: {
-          "0%": { transform: "rotate(0deg)" },
-          "50%": { transform: "rotate(180deg)" },
-          "100%": { transform: "rotate(360deg)" },
+        midnight: {
+          900: '#0F172A',
+          800: '#1E293B',
         },
       },
     },
+    animation: {
+      first: "moveVertical 30s ease infinite",
+      second: "moveInCircle 20s reverse infinite",
+      third: "moveInCircle 40s linear infinite",
+      fourth: "moveHorizontal 40s ease infinite",
+      fifth: "moveInCircle 20s ease infinite",
+      swing: "swing 3s ease-in-out infinite",
+    },
+    keyframes: {
+      swing: {
+        "0%, 100%": { transform: "rotate(10deg)" },
+        "50%": { transform: "rotate(-10deg)" },
+      },
+      moveHorizontal: {
+        "0%": { transform: "translateX(-50%) translateY(-10%)" },
+        "50%": { transform: "translateX(50%) translateY(10%)" },
+        "100%": { transform: "translateX(-50%) translateY(-10%)" },
+      },
+      moveVertical: {
+        "0%": { transform: "translateY(-50%)" },
+        "50%": { transform: "translateY(50%)" },
+        "100%": { transform: "translateY(-50%)" },
+      },
+      moveInCircle: {
+        "0%": { transform: "rotate(0deg)" },
+        "50%": { transform: "rotate(180deg)" },
+        "100%": { transform: "rotate(360deg)" },
+      },
+    },
   },
+
   plugins: [],
 }

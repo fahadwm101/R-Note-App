@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useLanguage } from '../LanguageContext';
+import { IS_RAMADAN } from '../src/config/theme';
 import PageTour from './PageTour';
 
 const Pomodoro: React.FC = () => {
@@ -64,8 +65,8 @@ const Pomodoro: React.FC = () => {
                 description={t('tourPomodoroDesc')}
                 features={t('tourPomodoroFeatures').split(',')}
             />
-            <h1 className="text-3xl font-bold text-gray-800 dark:text-white mb-8">{t('pomodoroTimer')}</h1>
-            <div className="max-w-md mx-auto bg-white dark:bg-slate-900/60 backdrop-blur-xl border border-slate-200 dark:border-white/10 shadow-sm dark:shadow-2xl rounded-[32px] p-8 text-center transition-colors duration-300">
+            <h1 className={`text-3xl font-bold mb-8 ${IS_RAMADAN ? 'text-gold-gradient' : 'text-gray-800 dark:text-white'}`}>{t('pomodoroTimer')}</h1>
+            <div className={`max-w-md mx-auto backdrop-blur-xl border border-slate-200 dark:border-white/10 shadow-sm dark:shadow-2xl rounded-[32px] p-8 text-center transition-colors duration-300 ${IS_RAMADAN ? 'card-royal' : 'bg-white dark:bg-slate-900/60'}`}>
                 <div className="mb-6">
                     <label className="block text-sm font-bold text-slate-700 dark:text-gray-300 mb-2">{t('focusTask')}</label>
                     <input type="text" placeholder={t('whatAreYouWorkingOn')} className="w-full p-4 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-xl text-slate-900 dark:text-white placeholder-slate-400 focus:ring-2 focus:ring-indigo-500 outline-none transition-all" />
@@ -73,7 +74,7 @@ const Pomodoro: React.FC = () => {
                 <div className="relative mb-8">
                     <svg className="w-64 h-64 mx-auto" viewBox="0 0 100 100">
                         <circle cx="50" cy="50" r="45" stroke="currentColor" strokeWidth="5" fill="none" className="text-slate-100 dark:text-white/5" />
-                        <circle cx="50" cy="50" r="45" stroke="rgb(99,102,241)" strokeWidth="5" fill="none" strokeDasharray={`${progress * 283} 283`} strokeLinecap="round" className="shadow-[0_0_15px_rgba(99,102,241,0.5)] transition-all duration-1000 ease-linear" transform="rotate(-90 50 50)" />
+                        <circle cx="50" cy="50" r="45" stroke={IS_RAMADAN ? '#d97706' : 'rgb(99,102,241)'} strokeWidth="5" fill="none" strokeDasharray={`${progress * 283} 283`} strokeLinecap="round" className={`transition-all duration-1000 ease-linear ${IS_RAMADAN ? 'shadow-[0_0_15px_rgba(217,119,6,0.5)]' : 'shadow-[0_0_15px_rgba(99,102,241,0.5)]'}`} transform="rotate(-90 50 50)" />
                     </svg>
                     <div className="absolute inset-0 flex flex-col items-center justify-center">
                         <span className="text-6xl font-mono font-bold text-slate-800 dark:text-white tracking-tighter">{formatTime(timeLeft)}</span>
@@ -88,7 +89,7 @@ const Pomodoro: React.FC = () => {
                 <div className="flex justify-center space-x-4">
                     <button
                         onClick={toggleTimer}
-                        className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-bold py-4 px-10 rounded-2xl shadow-lg shadow-indigo-500/30 transition-all duration-300 transform hover:scale-[1.02] active:scale-[0.98]"
+                        className={`font-bold py-4 px-10 rounded-2xl shadow-lg transition-all duration-300 transform hover:scale-[1.02] active:scale-[0.98] ${IS_RAMADAN ? 'bg-gradient-to-r from-emerald-600 to-emerald-800 hover:from-emerald-500 hover:to-emerald-700 text-white shadow-emerald-500/30' : 'bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white shadow-indigo-500/30'}`}
                     >
                         {isActive ? t('pause') : t('start')}
                     </button>

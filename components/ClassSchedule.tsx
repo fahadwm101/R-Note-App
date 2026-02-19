@@ -4,6 +4,7 @@ import CalendarView from './CalendarView';
 import { ICONS } from '../constants';
 import { useLanguage } from '../LanguageContext';
 import { useAuth } from '../src/context/AuthContext';
+import { IS_RAMADAN } from '../src/config/theme';
 import PageTour from './PageTour';
 
 declare global {
@@ -132,13 +133,13 @@ const ClassSchedule: React.FC<ClassScheduleProps> = ({ classes, tasks, quizzes, 
       </div>
 
       {viewMode === 'week' ? (
-        <div id="schedule-grid" className="bg-white dark:bg-slate-900/60 backdrop-blur-xl border border-slate-200 dark:border-white/10 shadow-sm dark:shadow-2xl rounded-[32px] overflow-x-auto p-4 relative transition-colors duration-300">
+        <div id="schedule-grid" className={`backdrop-blur-xl border border-slate-200 dark:border-white/10 shadow-sm dark:shadow-2xl rounded-[32px] overflow-x-auto p-4 relative transition-colors duration-300 ${IS_RAMADAN ? 'card-royal' : 'bg-white dark:bg-slate-900/60'}`}>
           <div className="grid grid-cols-6 min-w-[1000px]">
             {/* Empty corner cell */}
             <div className="bg-slate-50 dark:bg-slate-900/60 z-10 sticky left-0 top-0 border-b border-r border-slate-200 dark:border-white/20"></div>
             {/* Day headers */}
             {days.map((day, index) => (
-              <div key={day} className={`text-center font-bold text-slate-700 dark:text-white py-4 border-b border-slate-200 dark:border-white/20 ${index === todayIndex ? 'bg-indigo-50 dark:bg-white/10' : 'bg-slate-50 dark:bg-white/5'}`}>
+              <div key={day} className={`text-center font-bold py-4 border-b border-slate-200 dark:border-white/20 ${index === todayIndex ? (IS_RAMADAN ? 'bg-amber-500/10 text-amber-300' : 'bg-indigo-50 dark:bg-white/10 text-slate-700 dark:text-white') : (IS_RAMADAN ? 'bg-transparent text-amber-200/70' : 'bg-slate-50 dark:bg-white/5 text-slate-700 dark:text-white')}`}>
                 {day}
               </div>
             ))}
@@ -146,7 +147,7 @@ const ClassSchedule: React.FC<ClassScheduleProps> = ({ classes, tasks, quizzes, 
             {/* Time slots and schedule cells */}
             {timeSlots.map((time, timeIndex) => (
               <React.Fragment key={time}>
-                <div className={`text-center text-xs font-semibold text-slate-500 dark:text-white/70 pe-2 py-4 ltr:border-r rtl:border-l border-slate-200 dark:border-white/20 bg-slate-50 dark:bg-slate-900/60 sticky left-0 flex items-center justify-center ${timeIndex !== timeSlots.length - 1 ? 'border-b' : ''}`}>
+                <div className={`text-center text-xs font-semibold pe-2 py-4 ltr:border-r rtl:border-l border-slate-200 dark:border-white/20 sticky left-0 flex items-center justify-center ${IS_RAMADAN ? 'bg-transparent text-amber-400/70' : 'bg-slate-50 dark:bg-slate-900/60 text-slate-500 dark:text-white/70'} ${timeIndex !== timeSlots.length - 1 ? 'border-b' : ''}`}>
                   {time}
                 </div>
                 {originalDays.map((day, dayIndex) => {
@@ -170,10 +171,22 @@ const ClassSchedule: React.FC<ClassScheduleProps> = ({ classes, tasks, quizzes, 
                     return slotTime.hour === classTime.hour && slotTime.meridiem === classTime.meridiem;
                   });
 
+                  const getColorClass = (colorClass: string) => {
+                    let finalColor = colorClass;
+
+                    // Map legacy/problematic colors to new high-contrast ones
+                    if (colorClass.includes('yellow')) finalColor = 'bg-orange-600';
+                    else if (colorClass.includes('pink') || colorClass.includes('rose')) finalColor = 'bg-teal-600';
+                    else if (colorClass.includes('purple') || colorClass.includes('indigo')) finalColor = 'bg-cyan-600';
+
+                    // Map base colors to their dark mode variants with opacity
+                    return `${finalColor} dark:${finalColor}/80`;
+                  };
+
                   return (
-                    <div key={`${day}-${time}`} className={`border-b ltr:border-r rtl:border-l border-slate-100 dark:border-white/20 h-24 p-1 group relative transition-colors hover:bg-slate-50 dark:hover:bg-white/5`}>
+                    <div key={`${day}-${time}`} className={`border-b ltr:border-r rtl:border-l border-slate-100 dark:border-white/10 h-24 p-1 group relative transition-colors ${IS_RAMADAN ? 'hover:bg-amber-500/5' : 'hover:bg-slate-50 dark:hover:bg-white/5'}`}>
                       {classItem && (
-                        <div className={`rounded-xl p-3 h-full flex flex-col justify-between ${classItem.color} dark:bg-opacity-20 text-white shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden`}>
+                        <div className={`rounded-xl p-3 h-full flex flex-col justify-between ${getColorClass(classItem.color)} text-white shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden`}>
                           <div className="overflow-hidden">
                             <p className="font-bold text-sm truncate leading-tight">{classItem.subject}</p>
                             <p className="text-xs opacity-90 truncate mt-0.5">{classItem.time}</p>

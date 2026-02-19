@@ -1,82 +1,96 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Default: deny all access
+    
+    // ---------------------------------------------------------
+    // 🛠️ دوال مساعدة (لترتيب الكود ومنع التكرار)
+    // ---------------------------------------------------------
+    
+    // 1. هل المستخدم مسجل دخول؟
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    // 2. هل المستخدم هو صاحب الملف الحالي؟ (للتعديل والقراءة والحذف)
+    function isOwner() {
+      return isSignedIn() && resource.data.userId == request.auth.uid;
+    }
+
+    // 3. هل الملف الجديد يحمل توقيع المستخدم الصحيح؟ (للإنشاء فقط)
+    function isValidNewDoc() {
+      return isSignedIn() && request.resource.data.userId == request.auth.uid;
+    }
+
+    // 4. هل الملف مسموح بنشره للعامة؟
+    function isPublic() {
+      return resource.data.isPublic == true;
+    }
+
+    // ---------------------------------------------------------
+    // 🔒 قواعد الحماية (Application Rules)
+    // ---------------------------------------------------------
+
+    // القفل العام: نمنع أي وصول غير محدد
     match /{document=**} {
       allow read, write: if false;
     }
-    
-    // User-specific data: users can only access their own data
+
+    // بيانات المستخدم وإحصائياته
     match /users/{userId} {
-      allow read, update, delete: if request.auth != null && request.auth.uid == userId;
-      allow create: if request.auth != null && request.auth.uid == userId;
-      
-      // User's subcollections (notes, tasks, etc.)
-      match /{subcollection}/{document=**} {
-        allow read, update, delete: if request.auth != null && request.auth.uid == userId;
-        allow create: if request.auth != null && request.auth.uid == userId;
-      }
+      allow read, write: if isSignedIn() && request.auth.uid == userId;
+    }
+    
+    match /user_stats/{userId} {
+      allow read, write: if isSignedIn() && request.auth.uid == userId;
     }
 
-    // User Stats for Streak
-    match /user_stats/{userId} {
-      allow read, update, delete: if request.auth != null && request.auth.uid == userId;
-      allow create: if request.auth != null && request.auth.uid == userId;
-    }
-    
-    // Notes collection
-    // Notes collection
+    // ---------------------------------------------------------
+    // 📝 المجموعات الأساسية (مع دعم المشاركة العامة)
+    // ---------------------------------------------------------
+
+    // الملاحظات: يقرأها المالك أو أي شخص إذا كانت عامة
     match /notes/{noteId} {
-      allow read: if (request.auth != null && resource.data.userId == request.auth.uid) || 
-                  (resource.data.isPublic == true);
-      allow update, delete: if request.auth != null && resource.data.userId == request.auth.uid;
-      allow create: if request.auth != null;
+      allow read: if isOwner() || isPublic();
+      allow create: if isValidNewDoc();  // ✅ تضمن أنك تنشئ ملاحظة لنفسك فقط
+      allow update, delete: if isOwner(); // ✅ المالك فقط يعدل ويحذف
     }
-    
-    // Tasks collection
-    match /tasks/{taskId} {
-      allow read, update, delete: if request.auth != null && 
-                           resource.data.userId == request.auth.uid;
-      allow create: if request.auth != null && 
-                       request.resource.data.userId == request.auth.uid;
-    }
-    
-    // Classes collection
+
+    // الجداول الدراسية: يقرأها المالك أو أي شخص إذا كانت عامة
     match /classes/{classId} {
-      allow read: if (request.auth != null && resource.data.userId == request.auth.uid) || 
-                  (resource.data.isPublic == true);
-      allow update, delete: if request.auth != null && resource.data.userId == request.auth.uid;
-      allow create: if request.auth != null;
+      allow read: if isOwner() || isPublic();
+      allow create: if isValidNewDoc();
+      allow update, delete: if isOwner();
     }
-    
-    // Quizzes collection
+
+    // ---------------------------------------------------------
+    // 🔒 المجموعات الخاصة (لا توجد مشاركة عامة)
+    // ---------------------------------------------------------
+
+    match /tasks/{taskId} {
+      allow read, update, delete: if isOwner();
+      allow create: if isValidNewDoc();
+    }
+
     match /quizzes/{quizId} {
-      allow read, update, delete: if request.auth != null && 
-                           resource.data.userId == request.auth.uid;
-      allow create: if request.auth != null;
+      allow read, update, delete: if isOwner();
+      allow create: if isValidNewDoc();
     }
-    
-    // Assignments collection
+
     match /assignments/{assignmentId} {
-      allow read, update, delete: if request.auth != null && 
-                           resource.data.userId == request.auth.uid;
-      allow create: if request.auth != null;
+      allow read, update, delete: if isOwner();
+      allow create: if isValidNewDoc();
     }
-    
-    // Public shared notes: read-only for everyone, write for authenticated users
+
+    // ---------------------------------------------------------
+    // ⚠️ مجموعات Legacy (إذا لم تعد تستخدمها، يفضل حذفها مستقبلاً)
+    // ---------------------------------------------------------
     match /public/notes/{noteId} {
-      allow read: if true; // Anyone can read shared notes
-      allow update, delete: if request.auth != null && 
-                              resource.data.userId == request.auth.uid;
-      allow create: if request.auth != null;
+      allow read: if true;
+      allow write: if isOwner(); 
     }
-    
-    // Public shared schedules: read-only for everyone
     match /public/schedules/{scheduleId} {
-      allow read: if true; // Anyone can read shared schedules
-      allow update, delete: if request.auth != null && 
-                              resource.data.userId == request.auth.uid;
-      allow create: if request.auth != null;
+      allow read: if true;
+      allow write: if isOwner();
     }
   }
 }

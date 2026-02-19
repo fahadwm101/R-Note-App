@@ -28,6 +28,8 @@ import { AuthProvider, useAuth } from './src/context/AuthContext';
 import { ThemeProvider } from './context/ThemeContext';
 import OfflineIndicator from './components/OfflineIndicator';
 
+import RamadanDecor from './components/RamadanDecor';
+
 const App: React.FC = () => {
     return (
         <AuthProvider>
@@ -210,9 +212,9 @@ const AppContent: React.FC = () => {
                             { value: 'bg-red-500', label: t('red') },
                             { value: 'bg-blue-500', label: t('blue') },
                             { value: 'bg-green-500', label: t('green') },
-                            { value: 'bg-yellow-500', label: t('yellow') },
-                            { value: 'bg-purple-500', label: t('purple') },
-                            { value: 'bg-pink-500', label: t('pink') }
+                            { value: 'bg-orange-600', label: t('orange') },
+                            { value: 'bg-cyan-600', label: t('cyan') },
+                            { value: 'bg-teal-600', label: t('teal') }
                         ]} />
                     </div>
                 );
@@ -240,6 +242,7 @@ const AppContent: React.FC = () => {
 
     return (
         <div className="flex h-screen text-gray-900 dark:text-gray-100 relative overflow-hidden bg-gray-50 dark:bg-slate-950 transition-colors duration-300">
+            <RamadanDecor />
             {/* 🌊 Organic Liquid Background - Visible only in Dark Mode */}
             <div className="absolute inset-0 w-full h-full pointer-events-none hidden dark:block">
 

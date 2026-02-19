@@ -5,6 +5,7 @@ import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveCo
 import { Task, Assignment, Quiz, Class } from '../types';
 import { ICONS } from '../constants';
 import { useLanguage } from '../LanguageContext';
+import { IS_RAMADAN } from '../src/config/theme';
 import { Link } from 'react-router-dom';
 
 interface AnalyticsProps {
@@ -51,7 +52,7 @@ const Analytics: React.FC<AnalyticsProps> = ({ tasks, assignments, quizzes, clas
         <Layout>
             <div className="animate-fadeIn pb-20">
                 <div className="flex items-center justify-between mb-6">
-                    <h1 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                    <h1 className={`text-2xl font-bold flex items-center gap-2 ${IS_RAMADAN ? 'text-gold-gradient' : 'text-gray-900 dark:text-white'}`}>
                         {ICONS.analytics} {t('advancedAnalytics')}
                     </h1>
                     <Link to="/dashboard" className="flex items-center text-sm text-gray-500 hover:text-indigo-600 dark:text-gray-400 dark:hover:text-indigo-400 transition-colors">
@@ -64,23 +65,23 @@ const Analytics: React.FC<AnalyticsProps> = ({ tasks, assignments, quizzes, clas
 
                 {/* Top Cards */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-                    <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700">
+                    <div className={`p-6 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 ${IS_RAMADAN ? 'card-royal' : 'bg-white dark:bg-slate-800'}`}>
                         <div className="text-gray-500 dark:text-gray-400 text-sm font-medium uppercase tracking-wider">{t('studyStreak')}</div>
                         <div className="mt-2 text-3xl font-extrabold text-indigo-600 dark:text-indigo-400 flex items-center gap-2">
                             {streak} <span className="text-lg text-gray-400">🔥 {t('daysInARowPlural')}</span>
                         </div>
                     </div>
-                    <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700">
+                    <div className={`p-6 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 ${IS_RAMADAN ? 'card-royal' : 'bg-white dark:bg-slate-800'}`}>
                         <div className="text-gray-500 dark:text-gray-400 text-sm font-medium uppercase tracking-wider">{t('taskProgress')}</div>
                         <div className="mt-2 text-3xl font-extrabold text-gray-800 dark:text-white">{tasks.length}</div>
                         <div className="text-xs text-green-500 mt-1">{completedTasks} {t('completed')}</div>
                     </div>
-                    <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700">
+                    <div className={`p-6 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 ${IS_RAMADAN ? 'card-royal' : 'bg-white dark:bg-slate-800'}`}>
                         <div className="text-gray-500 dark:text-gray-400 text-sm font-medium uppercase tracking-wider">{t('assignments')}</div>
                         <div className="mt-2 text-3xl font-extrabold text-gray-800 dark:text-white">{assignments.length}</div>
                         <div className="text-xs text-blue-500 mt-1">{submittedAssignments} {t('submitted')}</div>
                     </div>
-                    <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700">
+                    <div className={`p-6 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 ${IS_RAMADAN ? 'card-royal' : 'bg-white dark:bg-slate-800'}`}>
                         <div className="text-gray-500 dark:text-gray-400 text-sm font-medium uppercase tracking-wider">{t('quizzes')}</div>
                         <div className="mt-2 text-3xl font-extrabold text-gray-800 dark:text-white">{quizzes.length}</div>
                         <div className="text-xs text-red-500 mt-1">{t('upcomingQuizzes')}</div>
@@ -91,7 +92,7 @@ const Analytics: React.FC<AnalyticsProps> = ({ tasks, assignments, quizzes, clas
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
 
                     {/* Task Completion Pie Chart */}
-                    <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-lg border border-gray-100 dark:border-gray-700">
+                    <div className={`p-6 rounded-xl shadow-lg border border-gray-100 dark:border-gray-700 ${IS_RAMADAN ? 'card-royal' : 'bg-white dark:bg-slate-800'}`}>
                         <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-4">{t('taskCompletionRate')}</h3>
                         <div className="h-64 w-full">
                             <ResponsiveContainer width="100%" height="100%">
@@ -118,7 +119,7 @@ const Analytics: React.FC<AnalyticsProps> = ({ tasks, assignments, quizzes, clas
                     </div>
 
                     {/* Class Load Bar Chart */}
-                    <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-lg border border-gray-100 dark:border-gray-700">
+                    <div className={`p-6 rounded-xl shadow-lg border border-gray-100 dark:border-gray-700 ${IS_RAMADAN ? 'card-royal' : 'bg-white dark:bg-slate-800'}`}>
                         <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-4">{t('weeklyClassLoad')}</h3>
                         <div className="h-64 w-full">
                             <ResponsiveContainer width="100%" height="100%">
@@ -133,7 +134,7 @@ const Analytics: React.FC<AnalyticsProps> = ({ tasks, assignments, quizzes, clas
                     </div>
 
                     {/* Assignment Status Pie Chart */}
-                    <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-lg border border-gray-100 dark:border-gray-700">
+                    <div className={`p-6 rounded-xl shadow-lg border border-gray-100 dark:border-gray-700 ${IS_RAMADAN ? 'card-royal' : 'bg-white dark:bg-slate-800'}`}>
                         <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-4">{t('assignmentSubmissionStatus')}</h3>
                         <div className="h-64 w-full">
                             <ResponsiveContainer width="100%" height="100%">

@@ -3,6 +3,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Note } from '../types';
 import { ICONS } from '../constants';
 import { useLanguage } from '../LanguageContext';
+import { IS_RAMADAN } from '../src/config/theme';
 import PageTour from './PageTour';
 
 interface NotesProps {
@@ -77,9 +78,9 @@ const Notes: React.FC<NotesProps> = ({ notes, onAdd, onUpdate, onDelete }) => {
           {toastMessage}
         </div>
       )}
-      <div className="w-1/3 ltr:border-r rtl:border-l border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-slate-900/40 backdrop-blur-xl flex flex-col">
+      <div className={`w-1/3 ltr:border-r rtl:border-l border-slate-200 dark:border-white/10 backdrop-blur-xl flex flex-col ${IS_RAMADAN ? 'bg-slate-900/40' : 'bg-slate-50 dark:bg-slate-900/40'}`}>
         <div className="flex justify-between items-center p-4 border-b border-slate-200 dark:border-white/10">
-          <h2 className="text-xl font-bold text-slate-800 dark:text-white">{t('allNotes')}</h2>
+          <h2 className={`text-xl font-bold ${IS_RAMADAN ? 'text-gold-gradient' : 'text-slate-800 dark:text-white'}`}>{t('allNotes')}</h2>
           <button onClick={onAdd} className="bg-indigo-600 hover:bg-indigo-700 text-white p-2 rounded-md shadow-sm transition-colors">
             {ICONS.plus}
           </button>
@@ -91,8 +92,8 @@ const Notes: React.FC<NotesProps> = ({ notes, onAdd, onUpdate, onDelete }) => {
               <ul>
                 {notes.filter(n => n.subject === subject).map(note => (
                   <li key={note.id} onClick={() => setSelectedNote(note)}
-                    className={`group relative p-4 cursor-pointer ltr:border-l-4 rtl:border-r-4 transition-all duration-200 ${selectedNote?.id === note.id ? 'border-indigo-500 bg-white dark:bg-indigo-900/20 shadow-sm' : 'border-transparent hover:bg-slate-200 dark:hover:bg-white/10'}`}>
-                    <h4 className={`font-semibold truncate ${selectedNote?.id === note.id ? 'text-indigo-700 dark:text-white' : 'text-slate-700 dark:text-white'}`}>{note.title}</h4>
+                    className={`group relative p-4 cursor-pointer ltr:border-l-4 rtl:border-r-4 transition-all duration-200 ${selectedNote?.id === note.id ? (IS_RAMADAN ? 'border-amber-500 bg-amber-500/10' : 'border-indigo-500 bg-white dark:bg-indigo-900/20 shadow-sm') : 'border-transparent hover:bg-slate-200 dark:hover:bg-white/10'}`}>
+                    <h4 className={`font-semibold truncate ${selectedNote?.id === note.id ? (IS_RAMADAN ? 'text-amber-400' : 'text-indigo-700 dark:text-white') : 'text-slate-700 dark:text-white'}`}>{note.title}</h4>
                     <p className="text-xs text-slate-500 dark:text-white/70 mt-1">{t('updated')}: {new Date(note.lastUpdated).toLocaleDateString()}</p>
                     <div className="absolute top-2 end-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                       <button onClick={(e) => handleShare(e, note.id)} className="p-1 text-slate-400 hover:text-indigo-500 dark:text-white/50 dark:hover:text-indigo-400" title="Share Note">
@@ -112,11 +113,11 @@ const Notes: React.FC<NotesProps> = ({ notes, onAdd, onUpdate, onDelete }) => {
           ))}
         </div>
       </div>
-      <div className="w-2/3 flex flex-col bg-white dark:bg-slate-900/60 backdrop-blur-xl transition-colors duration-300">
+      <div className={`w-2/3 flex flex-col backdrop-blur-xl transition-colors duration-300 ${IS_RAMADAN ? 'bg-slate-900/60' : 'bg-white dark:bg-slate-900/60'}`}>
         {selectedNote ? (
           <>
-            <div className="p-6 border-b border-slate-200 dark:border-white/10 bg-white dark:bg-slate-900/60">
-              <h2 className="text-3xl font-bold text-slate-900 dark:text-white mb-1">{selectedNote.title}</h2>
+            <div className={`p-6 border-b border-slate-200 dark:border-white/10 ${IS_RAMADAN ? 'bg-transparent' : 'bg-white dark:bg-slate-900/60'}`}>
+              <h2 className={`text-3xl font-bold mb-1 ${IS_RAMADAN ? 'text-gold-gradient' : 'text-slate-900 dark:text-white'}`}>{selectedNote.title}</h2>
               <p className="text-sm font-medium text-slate-500 dark:text-gray-400">{selectedNote.subject}</p>
               <div className="mt-4 flex gap-2 flex-wrap touch-manipulation">
                 {[

@@ -111,9 +111,9 @@ export const translations: Record<Language, Record<string, string>> = {
     red: 'Red',
     blue: 'Blue',
     green: 'Green',
-    yellow: 'Yellow',
-    purple: 'Purple',
-    pink: 'Pink',
+    orange: 'Orange',
+    cyan: 'Cyan',
+    teal: 'Teal',
     // Missing Profile Translations
     appPreferences: 'App Preferences',
     theme: 'Theme',
@@ -186,6 +186,9 @@ export const translations: Record<Language, Record<string, string>> = {
     confirmImport: 'This will import data from the file. Existing data will NOT be deleted, but duplicates might be created if not careful. Continue?',
     importSuccess: 'Data imported successfully!',
     importFailed: 'Failed to import data. Please check the file.',
+    // Ramadan
+    ramadanKareem: 'Ramadan Kareem',
+    greeting: 'Hello',
   },
   ar: {
     rNote: 'R.NOTE',
@@ -297,9 +300,9 @@ export const translations: Record<Language, Record<string, string>> = {
     red: 'أحمر',
     blue: 'أزرق',
     green: 'أخضر',
-    yellow: 'أصفر',
-    purple: 'بنفسجي',
-    pink: 'وردي',
+    orange: 'برتقالي',
+    cyan: 'سماوي',
+    teal: 'فيروزي',
 
     // Missing Profile Translations
     appPreferences: 'تفضيلات التطبيق',
@@ -373,5 +376,8 @@ export const translations: Record<Language, Record<string, string>> = {
     confirmImport: 'سيتم استيراد البيانات من الملف. لن يتم حذف البيانات الحالية، ولكن قد يتم إنشاء تكرارات. هل تريد الاستمرار؟',
     importSuccess: 'تم استيراد البيانات بنجاح!',
     importFailed: 'فشل استيراد البيانات. يرجى التحقق من الملف.',
+    // Ramadan
+    ramadanKareem: 'رمضان كريم',
+    greeting: 'مرحباً',
   },
 };

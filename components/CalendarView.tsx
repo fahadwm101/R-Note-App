@@ -4,6 +4,7 @@ import { format, startOfWeek, addDays, startOfMonth, endOfMonth, endOfWeek, isSa
 import { Task, Quiz, Assignment, Class } from '../types';
 import { ICONS } from '../constants';
 import { useLanguage } from '../LanguageContext';
+import { IS_RAMADAN } from '../src/config/theme';
 
 interface CalendarViewProps {
     tasks: Task[];
@@ -164,7 +165,7 @@ const CalendarView: React.FC<CalendarViewProps> = ({ tasks, quizzes, assignments
             );
             days = [];
         }
-        return <div className="bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">{rows}</div>;
+        return <div className={`rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden ${IS_RAMADAN ? 'card-royal' : 'bg-white dark:bg-slate-800'}`}>{rows}</div>;
     };
 
     const renderSelectedDayDetails = () => {
@@ -195,7 +196,7 @@ const CalendarView: React.FC<CalendarViewProps> = ({ tasks, quizzes, assignments
         const hasEvents = dayTasks.length > 0 || dayQuizzes.length > 0 || dayAssignments.length > 0 || dayClasses.length > 0;
 
         return (
-            <div className="mt-6 bg-white dark:bg-slate-800 p-6 rounded-xl shadow-lg border border-gray-100 dark:border-gray-700 animate-fadeIn">
+            <div className={`mt-6 p-6 rounded-xl shadow-lg border border-gray-100 dark:border-gray-700 animate-fadeIn ${IS_RAMADAN ? 'card-royal' : 'bg-white dark:bg-slate-800'}`}>
                 <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-4 flex items-center gap-2">
                     <span className="h-2 w-2 rounded-full bg-indigo-500"></span>
                     {t('eventsFor')} {format(selectedDate, "eeee, MMMM do, yyyy")}
@@ -279,7 +280,7 @@ const CalendarView: React.FC<CalendarViewProps> = ({ tasks, quizzes, assignments
 
     return (
         <div className="p-4 max-w-6xl mx-auto animate-fadeIn">
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">{t('unifiedCalendar')}</h1>
+            <h1 className={`text-2xl font-bold mb-6 ${IS_RAMADAN ? 'text-gold-gradient' : 'text-gray-900 dark:text-white'}`}>{t('unifiedCalendar')}</h1>
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <div className="lg:col-span-2">
                     {renderHeader()}

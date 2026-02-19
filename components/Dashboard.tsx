@@ -7,6 +7,7 @@ import { useLanguage } from '../LanguageContext';
 import { PieChart, Pie, Cell, ResponsiveContainer } from 'recharts';
 import Layout from './Layout';
 import PageTour from './PageTour';
+import { IS_RAMADAN } from '../src/config/theme';
 
 interface DashboardProps {
     tasks: Task[];
@@ -100,11 +101,20 @@ const Dashboard: React.FC<DashboardProps> = ({ tasks = [], quizzes = [], notes =
                 features={t('tourDashboardFeatures').split(',')}
             />
             {/* Main 2-Column Layout */}
+            {/* Main 2-Column Layout */}
             <div className="grid grid-cols-1 lg:grid-cols-7 gap-8">
+                <style>{`
+                .ramadan-card-border {
+                    border-color: ${IS_RAMADAN ? 'rgba(234, 179, 8, 0.3)' : ''} !important;
+                }
+                .dark .ramadan-card-border {
+                    box-shadow: ${IS_RAMADAN ? '0 4px 6px -1px rgba(234, 179, 8, 0.1), 0 2px 4px -1px rgba(234, 179, 8, 0.06)' : ''} !important;
+                }
+                `}</style>
                 {/* Left Column - Main Content (70% width) */}
                 <div className="lg:col-span-5 space-y-8">
                     {/* Hero CTA Section */}
-                    <div className="bg-gradient-to-r from-slate-900 via-purple-900 to-slate-900 backdrop-blur-xl border border-purple-500/30 rounded-2xl shadow-[0_0_30px_rgba(147,51,234,0.2)] p-8 text-center">
+                    <div className={`bg-gradient-to-r from-slate-900 via-purple-900 to-slate-900 backdrop-blur-xl border border-purple-500/30 rounded-2xl shadow-[0_0_30px_rgba(147,51,234,0.2)] p-8 text-center ${IS_RAMADAN ? 'shadow-[0_0_30px_rgba(245,158,11,0.15)] border-amber-500/30' : ''}`}>
                         <h2 className="text-3xl font-bold text-white mb-4 flex items-center justify-center gap-2">{ICONS.target} {t('whatShouldIStudyNow')}</h2>
                         <p className="text-white/80 mb-6">Get personalized study recommendations based on your priorities</p>
                         <button
@@ -118,10 +128,12 @@ const Dashboard: React.FC<DashboardProps> = ({ tasks = [], quizzes = [], notes =
                     {/* Main Cards Grid */}
                     <div className="lg:col-span-7 grid grid-cols-1 md:grid-cols-3 gap-6 w-full">
                         {/* Today's Tasks */}
-                        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm hover:shadow-md transition-shadow duration-300 p-6 flex flex-col border border-slate-200 dark:border-gray-700 h-full">
+                        <div className={`card-royal rounded-2xl p-6 flex flex-col h-full group transition-all duration-300 hover:shadow-2xl hover:border-amber-500/40`}>
                             <div className="flex items-center justify-between mb-4">
-                                <h2 className="text-xl font-bold text-slate-800 dark:text-gray-100">{t('todaysTasks')}</h2>
-                                <button onClick={() => openModal('tasks')} className="text-slate-400 hover:text-indigo-600 dark:hover:text-white p-2 rounded-full hover:bg-slate-100 dark:hover:bg-gray-700 transition-all">
+                                <h2 className={`text-xl font-bold text-slate-800 dark:text-gray-100`}>
+                                    <span className={IS_RAMADAN ? 'text-gold-gradient' : ''}>{t('todaysTasks')}</span>
+                                </h2>
+                                <button onClick={() => openModal('tasks')} className={`p-2 rounded-full transition-all ${IS_RAMADAN ? 'text-slate-400 hover:text-emerald-400 hover:bg-emerald-50/10' : 'text-slate-400 hover:text-indigo-600 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-gray-700'}`}>
                                     {ICONS.plus}
                                 </button>
                             </div>
@@ -145,10 +157,12 @@ const Dashboard: React.FC<DashboardProps> = ({ tasks = [], quizzes = [], notes =
                         </div>
 
                         {/* Upcoming Quizzes */}
-                        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm hover:shadow-md transition-shadow duration-300 p-6 flex flex-col border border-slate-200 dark:border-gray-700 h-full">
+                        <div className={`card-royal rounded-2xl p-6 flex flex-col h-full group transition-all duration-300 hover:shadow-2xl hover:border-amber-500/40`}>
                             <div className="flex items-center justify-between mb-4">
-                                <h2 className="text-xl font-bold text-slate-800 dark:text-gray-100">{t('upcomingQuizzes')}</h2>
-                                <button onClick={() => openModal('quizzes')} className="text-slate-400 hover:text-indigo-600 dark:hover:text-white p-2 rounded-full hover:bg-slate-100 dark:hover:bg-gray-700 transition-all">
+                                <h2 className={`text-xl font-bold text-slate-800 dark:text-gray-100`}>
+                                    <span className={IS_RAMADAN ? 'text-gold-gradient' : ''}>{t('upcomingQuizzes')}</span>
+                                </h2>
+                                <button onClick={() => openModal('quizzes')} className={`p-2 rounded-full transition-all ${IS_RAMADAN ? 'text-slate-400 hover:text-emerald-400 hover:bg-emerald-50/10' : 'text-slate-400 hover:text-indigo-600 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-gray-700'}`}>
                                     {ICONS.plus}
                                 </button>
                             </div>
@@ -178,10 +192,12 @@ const Dashboard: React.FC<DashboardProps> = ({ tasks = [], quizzes = [], notes =
                         </div>
 
                         {/* Upcoming Assignments */}
-                        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm hover:shadow-md transition-shadow duration-300 p-6 flex flex-col border border-slate-200 dark:border-gray-700 h-full">
+                        <div className={`card-royal rounded-2xl p-6 flex flex-col h-full group transition-all duration-300 hover:shadow-2xl hover:border-amber-500/40`}>
                             <div className="flex items-center justify-between mb-4">
-                                <h2 className="text-xl font-bold text-slate-800 dark:text-gray-100">{t('assignments')}</h2>
-                                <button onClick={() => openModal('assignments')} className="text-slate-400 hover:text-indigo-600 dark:hover:text-white p-2 rounded-full hover:bg-slate-100 dark:hover:bg-gray-700 transition-all">
+                                <h2 className={`text-xl font-bold text-slate-800 dark:text-gray-100`}>
+                                    <span className={IS_RAMADAN ? 'text-gold-gradient' : ''}>{t('assignments')}</span>
+                                </h2>
+                                <button onClick={() => openModal('assignments')} className={`p-2 rounded-full transition-all ${IS_RAMADAN ? 'text-slate-400 hover:text-emerald-400 hover:bg-emerald-50/10' : 'text-slate-400 hover:text-indigo-600 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-gray-700'}`}>
                                     {ICONS.plus}
                                 </button>
                             </div>

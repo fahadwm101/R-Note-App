@@ -3,6 +3,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { ICONS } from '../constants';
 import { useLanguage } from '../LanguageContext';
 import { useAuth } from '../src/context/AuthContext';
+import { IS_RAMADAN } from '../src/config/theme';
 
 interface SidebarProps {
     isOpen: boolean;
@@ -55,10 +56,17 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen }) => {
     return (
         <aside className={`${baseClasses} fixed inset-y-0 ${positionClasses} lg:relative lg:inset-y-auto lg:!transform-none ${transformClasses} flex flex-col`}>
             {/* Student Info Header */}
-            <div className="pt-32 pb-4 px-4 bg-gradient-to-b from-white/20 dark:from-black/20 to-transparent">
-                <div className="flex flex-col items-center">
+            <div className={`pt-32 pb-4 px-4 bg-gradient-to-b ${IS_RAMADAN ? 'from-emerald-900/10 dark:from-gold-500/10' : 'from-white/20 dark:from-black/20'} to-transparent`}>
+                <div className="flex flex-col items-center relative">
+
+                    {/* Ramadan Crescent 🌙 */}
+                    {IS_RAMADAN && (
+                        <div className="absolute top-0 right-10 text-2xl animate-pulse filter drop-shadow-md z-50 transform -rotate-12" title={t('ramadanKareem')}>
+                            🌙
+                        </div>
+                    )}
                     {(!avatar || imageError) ? (
-                        <div className="h-16 w-16 rounded-full bg-white dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-600 flex items-center justify-center mb-3 shadow-md">
+                        <div className={`h-16 w-16 rounded-full bg-white dark:bg-slate-800 border-2 ${IS_RAMADAN ? 'border-amber-500/50 shadow-[0_0_15px_rgba(251,191,36,0.2)]' : 'border-slate-200 dark:border-slate-600'} flex items-center justify-center mb-3 shadow-md`}>
                             <span className="text-2xl text-slate-400 dark:text-slate-400">
                                 <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" viewBox="0 0 20 20" fill="currentColor">
                                     <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
@@ -69,12 +77,12 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen }) => {
                         <img
                             src={avatar}
                             alt="Student Avatar"
-                            className="h-16 w-16 rounded-full object-cover border-2 border-white dark:border-white/20 mb-3 shadow-md"
+                            className={`h-16 w-16 rounded-full object-cover border-2 ${IS_RAMADAN ? 'border-amber-500/50 shadow-[0_0_15px_rgba(251,191,36,0.2)]' : 'border-white dark:border-white/20'} mb-3 shadow-md`}
                             onError={() => setImageError(true)}
                         />
                     )}
                     <div className="text-center">
-                        <p className="text-slate-800 dark:text-white font-bold text-lg tracking-wide">{studentName}</p>
+                        <p className={`font-bold text-lg tracking-wide ${IS_RAMADAN ? 'text-gold-gradient drop-shadow-sm' : 'text-slate-800 dark:text-white'}`}>{studentName}</p>
                         <p className="text-slate-500 dark:text-gray-400 text-xs uppercase tracking-wider font-medium">Student 🦊</p>
                     </div>
                 </div>
@@ -85,8 +93,10 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen }) => {
                         key={item.id}
                         to={`/${item.id}`}
                         className={`flex items-center px-4 py-2 text-sm font-medium rounded-md transition-all duration-200 ${currentView === item.id
-                            ? 'bg-white dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-300 shadow-sm ring-1 ring-slate-200 dark:ring-indigo-700'
-                            : 'text-slate-600 dark:text-gray-400 hover:bg-white/50 dark:hover:bg-gray-800 hover:text-slate-900 dark:hover:text-gray-200'
+                            ? IS_RAMADAN
+                                ? 'bg-indigo-100 text-indigo-900 border-r-2 border-indigo-700 dark:bg-amber-500/20 dark:text-amber-300 dark:border-amber-500 dark:shadow-[0_0_15px_rgba(251,191,36,0.2)]'
+                                : 'bg-white dark:bg-indigo-900/50 text-indigo-800 dark:text-indigo-300 shadow-sm ring-1 ring-slate-300 dark:ring-indigo-700'
+                            : 'text-slate-600 hover:text-indigo-800 hover:bg-slate-200 dark:hover:text-amber-200 dark:hover:bg-white/5'
                             }`}
                     >
                         {item.icon}

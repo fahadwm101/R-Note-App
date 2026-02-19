@@ -3,6 +3,7 @@ import React from 'react';
 import { Quiz } from '../types';
 import { ICONS } from '../constants';
 import { useLanguage } from '../LanguageContext';
+import { IS_RAMADAN } from '../src/config/theme';
 import PageTour from './PageTour';
 
 interface QuizzesProps {
@@ -35,13 +36,13 @@ const Quizzes: React.FC<QuizzesProps> = ({ quizzes, onDelete, onEdit }) => {
         features={t('tourQuizzesFeatures').split(',')}
       />
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold text-gray-800 dark:text-white">{t('quizzesAndExams')}</h1>
+        <h1 className={`text-3xl font-bold ${IS_RAMADAN ? 'text-gold-gradient' : 'text-gray-800 dark:text-white'}`}>{t('quizzesAndExams')}</h1>
         <button onClick={() => onEdit()} className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-md inline-flex items-center">
           {ICONS.plus}
           <span className="ms-2">{t('addQuiz')}</span>
         </button>
       </div>
-      <div className="bg-white dark:bg-slate-900/60 backdrop-blur-xl border border-slate-200 dark:border-white/10 shadow-sm dark:shadow-2xl rounded-[32px] overflow-hidden transition-colors duration-300">
+      <div className={`backdrop-blur-xl border border-slate-200 dark:border-white/10 shadow-sm dark:shadow-2xl rounded-[32px] overflow-hidden transition-colors duration-300 ${IS_RAMADAN ? 'card-royal' : 'bg-white dark:bg-slate-900/60'}`}>
         <table className="min-w-full divide-y border-slate-200 dark:border-white/5">
           <thead className="bg-slate-50 dark:bg-white/5">
             <tr>

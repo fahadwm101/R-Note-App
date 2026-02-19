@@ -1,3 +1,46 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer base {
+    body {
+        @apply bg-gray-100 dark:bg-[#020617];
+        min-height: 100vh;
+    }
+
+    .dark body {
+        background-color: #020617;
+        background-image:
+            url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23D4AF37' fill-opacity='0.20'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E"),
+            radial-gradient(circle at 50% 0%, #1e1b4b 0%, #020617 80%);
+    }
+}
+
+@layer utilities {
+    .bg-mashrabiya {
+        /* Already applied to body, keeping utility just in case */
+        background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23D4AF37' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+
+    .text-gold-gradient {
+        @apply bg-gradient-to-r from-amber-500 via-amber-400 to-amber-600 bg-clip-text text-transparent;
+    }
+
+    .dark .text-gold-gradient {
+        @apply from-amber-200 via-amber-400 to-amber-500 text-transparent;
+        filter: drop-shadow(0 0 10px rgba(251, 191, 36, 0.5));
+    }
+
+    .btn-royal {
+        @apply bg-emerald-800 hover:bg-emerald-700 text-white transition-all duration-300 border border-emerald-600/30;
+        box-shadow: 0 0 20px rgba(16, 185, 129, 0.5);
+    }
+
+    .card-royal {
+        @apply bg-white/50 dark:bg-white/5 backdrop-blur-xl border border-slate-200/60 dark:border-amber-500/25 shadow-xl;
+    }
+
+    .dark .card-royal {
+        box-shadow: 0 0 15px rgba(0, 0, 0, 0.3);
+    }
+}

@@ -2,6 +2,7 @@ import React from 'react';
 import { useLanguage } from '../LanguageContext';
 import { useTheme } from '../context/ThemeContext';
 import { useAuth } from '../src/context/AuthContext';
+import { IS_RAMADAN } from '../src/config/theme';
 
 import { useDataManagement } from '../hooks/useDataManagement';
 
@@ -116,9 +117,9 @@ const ProfileSettings: React.FC<ProfileSettingsProps> = ({ tasks, classes, notes
                 description={t('tourProfileDesc')}
                 features={t('tourProfileFeatures').split(',')}
             />
-            <h1 className="text-3xl font-bold text-gray-800 dark:text-white mb-6">{t('profileSettings')}</h1>
+            <h1 className={`text-3xl font-bold mb-6 ${IS_RAMADAN ? 'text-gold-gradient' : 'text-gray-800 dark:text-white'}`}>{t('profileSettings')}</h1>
 
-            <div className="max-w-md mx-auto bg-white dark:bg-slate-900/60 backdrop-blur-xl border border-slate-200 dark:border-white/10 shadow-sm dark:shadow-2xl rounded-[32px] p-8 transition-colors duration-300">
+            <div className={`max-w-md mx-auto backdrop-blur-xl border border-slate-200 dark:border-white/10 shadow-sm dark:shadow-2xl rounded-[32px] p-8 transition-colors duration-300 ${IS_RAMADAN ? 'card-royal' : 'bg-white dark:bg-slate-900/60'}`}>
                 <form>
                     {/* Profile Picture */}
                     <div className="mb-8 text-center">
@@ -139,7 +140,7 @@ const ProfileSettings: React.FC<ProfileSettingsProps> = ({ tasks, classes, notes
                                 <div className="absolute bottom-1 right-1 bg-green-500 w-4 h-4 rounded-full border-2 border-white dark:border-slate-800"></div>
                             </div>
                         )}
-                        <h2 className="mt-4 text-xl font-bold text-slate-800 dark:text-white flex items-center justify-center gap-2">
+                        <h2 className={`mt-4 text-xl font-bold flex items-center justify-center gap-2 ${IS_RAMADAN ? 'text-gold-gradient' : 'text-slate-800 dark:text-white'}`}>
                             {studentName} 🦊
                         </h2>
                         <p className="text-sm text-slate-500 dark:text-slate-400">{user?.email || 'Student Account'}</p>

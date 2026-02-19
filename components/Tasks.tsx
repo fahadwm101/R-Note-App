@@ -4,6 +4,7 @@ import { Task, Priority } from '../types';
 import { ICONS } from '../constants';
 import { useLanguage } from '../LanguageContext';
 import Layout from './Layout';
+import { IS_RAMADAN } from '../src/config/theme';
 import PageTour from './PageTour';
 
 declare global {
@@ -80,7 +81,7 @@ const Tasks: React.FC<TasksProps> = ({ tasks, onToggleComplete, onDelete, onEdit
         features={t('tourTasksFeatures').split(',')}
       />
       <div className="p-4 sm:p-6 lg:p-8 flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold text-slate-800 dark:text-white">{t('tasks')}</h1>
+        <h1 className={`text-3xl font-bold ${IS_RAMADAN ? 'text-gold-gradient' : 'text-slate-800 dark:text-white'}`}>{t('tasks')}</h1>
         <div className="flex flex-col sm:flex-row gap-2">
           <button onClick={() => onEdit()} className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-xl inline-flex items-center justify-center transition-colors shadow-sm">
             {ICONS.plus}
@@ -88,13 +89,13 @@ const Tasks: React.FC<TasksProps> = ({ tasks, onToggleComplete, onDelete, onEdit
           </button>
         </div>
       </div>
-      <div className="bg-white dark:bg-slate-900/40 backdrop-blur-xl border border-slate-200 dark:border-white/10 shadow-sm dark:shadow-2xl rounded-[32px] p-6 transition-colors duration-300">
+      <div className={`backdrop-blur-xl border border-slate-200 dark:border-white/10 shadow-sm dark:shadow-2xl rounded-[32px] p-6 transition-colors duration-300 ${IS_RAMADAN ? 'card-royal' : 'bg-white dark:bg-slate-900/40'}`}>
         <div className="space-y-3">
           {sortedTasks.length === 0 && (
             <p className="text-center text-gray-500 py-10">No tasks found. Add a new task!</p>
           )}
           {sortedTasks.map(task => (
-            <div key={task.id} className={`p-4 flex flex-col sm:flex-row sm:items-center justify-between hover:bg-slate-50 dark:hover:bg-white/5 border border-slate-200 dark:border-white/5 rounded-2xl bg-white dark:bg-white/5 backdrop-blur-md transition-all duration-200 group shadow-sm hover:shadow-md ${task.completed ? 'opacity-60 bg-slate-50 dark:bg-transparent' : ''}`}>
+            <div key={task.id} className={`p-4 flex flex-col sm:flex-row sm:items-center justify-between transition-all duration-200 group shadow-sm hover:shadow-md rounded-2xl backdrop-blur-sm ${IS_RAMADAN ? 'bg-white/5 border border-amber-500/20 hover:border-amber-500/40 hover:bg-white/8' : 'bg-white dark:bg-white/5 border border-slate-200 dark:border-white/5 hover:bg-slate-50 dark:hover:bg-white/10'} ${task.completed ? 'opacity-60' : ''}`}>
               <div className="flex items-center mb-2 sm:mb-0">
                 <input
                   type="checkbox"
@@ -103,7 +104,7 @@ const Tasks: React.FC<TasksProps> = ({ tasks, onToggleComplete, onDelete, onEdit
                   className="h-5 w-5 rounded-md border-slate-300 dark:border-gray-500 text-indigo-600 focus:ring-indigo-500 cursor-pointer transition-colors"
                 />
                 <div className="ms-4">
-                  <p className={`text-base font-medium ${task.completed ? 'text-slate-500 line-through decoration-slate-400' : 'text-slate-800 dark:text-white'}`}>{task.title}</p>
+                  <p className={`text-base font-bold ${task.completed ? 'text-slate-600 line-through decoration-slate-500' : (IS_RAMADAN ? 'text-slate-900 dark:text-amber-400' : 'text-slate-900 dark:text-white')}`}>{task.title}</p>
                   <p className="text-sm text-slate-500 dark:text-gray-400 mt-0.5">{t('due')}: {new Date(task.dueDate).toLocaleDateString()}</p>
                 </div>
               </div>
