@@ -27,6 +27,7 @@ import { useDataManagement } from './hooks/useDataManagement';
 import { AuthProvider, useAuth } from './src/context/AuthContext';
 import { ThemeProvider } from './context/ThemeContext';
 import OfflineIndicator from './components/OfflineIndicator';
+import PWAInstallPrompt from './components/PWAInstallPrompt';
 
 import RamadanDecor from './components/RamadanDecor';
 
@@ -243,6 +244,7 @@ const AppContent: React.FC = () => {
     return (
         <div className="flex h-screen text-gray-900 dark:text-gray-100 relative overflow-hidden bg-gray-50 dark:bg-slate-950 transition-colors duration-300">
             <RamadanDecor />
+            <PWAInstallPrompt />
             {/* 🌊 Organic Liquid Background - Visible only in Dark Mode */}
             <div className="absolute inset-0 w-full h-full pointer-events-none hidden dark:block">
 
