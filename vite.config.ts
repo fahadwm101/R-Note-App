@@ -14,20 +14,26 @@ export default defineConfig(({ mode }) => {
       registerType: 'autoUpdate',
       includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'masked-icon.svg'],
       manifest: {
-        name: 'R.Note Student Dashboard',
+        name: 'R.Note - Student Dashboard',
         short_name: 'R.Note',
-        description: 'Student productivity and management dashboard',
+        description: 'مساحتك الدراسية - Student productivity and management dashboard',
         theme_color: '#0f172a',
+        background_color: '#020617',
+        display: 'standalone',
+        start_url: '/',
+        scope: '/',
         icons: [
           {
-            src: 'pwa-192x192.png',
+            src: 'logo.png',
             sizes: '192x192',
-            type: 'image/png'
+            type: 'image/png',
+            purpose: 'any maskable'
           },
           {
-            src: 'pwa-512x512.png',
+            src: 'logo.png',
             sizes: '512x512',
-            type: 'image/png'
+            type: 'image/png',
+            purpose: 'any maskable'
           }
         ]
       },
