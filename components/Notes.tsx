@@ -93,7 +93,7 @@ const Notes: React.FC<NotesProps> = ({ notes, onAdd, onUpdate, onDelete }) => {
                 {notes.filter(n => n.subject === subject).map(note => (
                   <li key={note.id} onClick={() => setSelectedNote(note)}
                     className={`group relative p-4 cursor-pointer ltr:border-l-4 rtl:border-r-4 transition-all duration-200 ${selectedNote?.id === note.id ? (IS_RAMADAN ? 'border-amber-500 bg-amber-500/10' : 'border-indigo-500 bg-white dark:bg-indigo-900/20 shadow-sm') : 'border-transparent hover:bg-slate-200 dark:hover:bg-white/10'}`}>
-                    <h4 className={`font-semibold truncate ${selectedNote?.id === note.id ? (IS_RAMADAN ? 'text-amber-400' : 'text-indigo-700 dark:text-white') : 'text-slate-700 dark:text-white'}`}>{note.title}</h4>
+                    <h4 className={`font-semibold truncate ${selectedNote?.id === note.id ? (IS_RAMADAN ? 'text-slate-900 dark:text-amber-400' : 'text-indigo-700 dark:text-white') : 'text-slate-700 dark:text-white'}`}>{note.title}</h4>
                     <p className="text-xs text-slate-500 dark:text-white/70 mt-1">{t('updated')}: {new Date(note.lastUpdated).toLocaleDateString()}</p>
                     <div className="absolute top-2 end-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                       <button onClick={(e) => handleShare(e, note.id)} className="p-1 text-slate-400 hover:text-indigo-500 dark:text-white/50 dark:hover:text-indigo-400" title="Share Note">

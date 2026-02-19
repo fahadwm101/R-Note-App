@@ -139,7 +139,7 @@ const ClassSchedule: React.FC<ClassScheduleProps> = ({ classes, tasks, quizzes, 
             <div className="bg-slate-50 dark:bg-slate-900/60 z-10 sticky left-0 top-0 border-b border-r border-slate-200 dark:border-white/20"></div>
             {/* Day headers */}
             {days.map((day, index) => (
-              <div key={day} className={`text-center font-bold py-4 border-b border-slate-200 dark:border-white/20 ${index === todayIndex ? (IS_RAMADAN ? 'bg-amber-500/10 text-amber-300' : 'bg-indigo-50 dark:bg-white/10 text-slate-700 dark:text-white') : (IS_RAMADAN ? 'bg-transparent text-amber-200/70' : 'bg-slate-50 dark:bg-white/5 text-slate-700 dark:text-white')}`}>
+              <div key={day} className={`text-center font-bold py-4 border-b border-slate-200 dark:border-white/20 ${index === todayIndex ? (IS_RAMADAN ? 'bg-amber-500/10 text-slate-900 dark:text-amber-300' : 'bg-indigo-50 dark:bg-white/10 text-slate-900 dark:text-white') : (IS_RAMADAN ? 'bg-transparent text-slate-900 dark:text-amber-200/70' : 'bg-slate-50 dark:bg-white/5 text-slate-900 dark:text-white')}`}>
                 {day}
               </div>
             ))}
@@ -147,7 +147,7 @@ const ClassSchedule: React.FC<ClassScheduleProps> = ({ classes, tasks, quizzes, 
             {/* Time slots and schedule cells */}
             {timeSlots.map((time, timeIndex) => (
               <React.Fragment key={time}>
-                <div className={`text-center text-xs font-semibold pe-2 py-4 ltr:border-r rtl:border-l border-slate-200 dark:border-white/20 sticky left-0 flex items-center justify-center ${IS_RAMADAN ? 'bg-transparent text-amber-400/70' : 'bg-slate-50 dark:bg-slate-900/60 text-slate-500 dark:text-white/70'} ${timeIndex !== timeSlots.length - 1 ? 'border-b' : ''}`}>
+                <div className={`text-center text-xs font-semibold pe-2 py-4 ltr:border-r rtl:border-l border-slate-200 dark:border-white/20 sticky left-0 flex items-center justify-center ${IS_RAMADAN ? 'bg-transparent text-slate-600 dark:text-amber-400/70' : 'bg-slate-50 dark:bg-slate-900/60 text-slate-500 dark:text-white/70'} ${timeIndex !== timeSlots.length - 1 ? 'border-b' : ''}`}>
                   {time}
                 </div>
                 {originalDays.map((day, dayIndex) => {
