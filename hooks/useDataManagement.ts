@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Class, Task, Quiz, Assignment, Note, Priority, SubmissionStatus, AnyItem } from '../types';
 import { db, auth } from '../src/lib/firebase';
+import { sendNotification } from '../src/utils/notifications';
+import { useLanguage } from '../LanguageContext';
 import { collection, onSnapshot, addDoc, deleteDoc, updateDoc, setDoc, doc, query, orderBy, Timestamp, where, serverTimestamp, writeBatch, getDoc, getDocs } from 'firebase/firestore';
 import { useAuth } from '../src/context/AuthContext';
 
@@ -256,7 +258,7 @@ export const useDataManagement = (skipSubscription: boolean = false) => {
                     const dueDate = new Date(task.dueDate);
                     if (dueDate > now && dueDate <= oneHourLater) {
                         notifiedIds.current.add(task.id);
-                        new Notification('Upcoming Task', { body: `Task "${task.title}" is due soon!`, icon: '/logo.png' });
+                        sendNotification('Upcoming Task', { body: `Task "${task.title}" is due soon!`, icon: '/logo.png' });
                     }
                 }
             });
@@ -267,7 +269,7 @@ export const useDataManagement = (skipSubscription: boolean = false) => {
                     const quizDate = new Date(quiz.date);
                     if (quizDate > now && quizDate <= oneHourLater) {
                         notifiedIds.current.add(quiz.id);
-                        new Notification('Upcoming Quiz', { body: `Quiz "${quiz.subject}" is starting soon!`, icon: '/logo.png' });
+                        sendNotification('Upcoming Quiz', { body: `Quiz "${quiz.subject}" is starting soon!`, icon: '/logo.png' });
                     }
                 }
             });
@@ -278,7 +280,7 @@ export const useDataManagement = (skipSubscription: boolean = false) => {
                     const dueDate = new Date(assignment.dueDate);
                     if (dueDate > now && dueDate <= oneHourLater) {
                         notifiedIds.current.add(assignment.id);
-                        new Notification('Assignment Due', { body: `Assignment "${assignment.title}" is due soon!`, icon: '/logo.png' });
+                        sendNotification('Assignment Due', { body: `Assignment "${assignment.title}" is due soon!`, icon: '/logo.png' });
                     }
                 }
             });

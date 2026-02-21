@@ -1,4 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { ICONS } from '../constants';
+import { sendNotification } from '../src/utils/notifications';
 import { useLanguage } from '../LanguageContext';
 import { IS_RAMADAN } from '../src/config/theme';
 import PageTour from './PageTour';
@@ -36,14 +38,14 @@ const Pomodoro: React.FC = () => {
                 setTimeLeft(breakMin * 60);
                 setSessions(s => s + 1);
                 if ('Notification' in window && Notification.permission === 'granted') {
-                    new Notification(t('breakTimeNotification'), { body: t('takeTenMinuteBreak') || `Take a ${breakMin} minute break.` });
+                    sendNotification(t('breakTimeNotification'), { body: t('takeTenMinuteBreak') || `Take a ${breakMin} minute break.` });
                 }
             } else {
                 setIsBreak(false);
                 setTimeLeft(workMin * 60);
                 // Notification for back to work
                 if ('Notification' in window && Notification.permission === 'granted') {
-                    new Notification(t('workTimeNotification'), { body: t('backToWork') });
+                    sendNotification(t('workTimeNotification'), { body: t('backToWork') });
                 }
             }
         } else {
