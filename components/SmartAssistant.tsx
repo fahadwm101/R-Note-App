@@ -4,6 +4,7 @@ import { ICONS } from '../constants';
 import { ChatMessage } from '../types';
 import { getGeminiResponse } from '../services/geminiService';
 import { marked } from 'marked';
+import DOMPurify from 'dompurify';
 import { useLanguage } from '../LanguageContext';
 import { IS_RAMADAN } from '../src/config/theme';
 import { useDataManagement } from '../hooks/useDataManagement';
@@ -87,7 +88,7 @@ const SmartAssistant: React.FC<SmartAssistantProps> = ({ isOpen: externalIsOpen,
             <div key={index} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
               <div className={`rounded-lg px-4 py-2 max-w-sm ${msg.role === 'user' ? 'bg-indigo-500 text-white' : 'bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200'}`}>
                 {msg.role === 'model' ? (
-                  <div className="prose prose-sm dark:prose-invert max-w-none" dangerouslySetInnerHTML={{ __html: marked.parse(msg.text) }} />
+                  <div className="prose prose-sm dark:prose-invert max-w-none" dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(marked.parse(msg.text) as string) }} />
                 ) : (
                   <p>{msg.text}</p>
                 )}
@@ -159,7 +160,7 @@ const SmartAssistant: React.FC<SmartAssistantProps> = ({ isOpen: externalIsOpen,
                   <div key={index} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
                     <div className={`rounded-lg px-4 py-2 max-w-sm ${msg.role === 'user' ? 'bg-indigo-500 text-white' : 'bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200'}`}>
                       {msg.role === 'model' ? (
-                        <div className="prose prose-sm dark:prose-invert max-w-none" dangerouslySetInnerHTML={{ __html: marked.parse(msg.text) }} />
+                        <div className="prose prose-sm dark:prose-invert max-w-none" dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(marked.parse(msg.text) as string) }} />
                       ) : (
                         <p>{msg.text}</p>
                       )}

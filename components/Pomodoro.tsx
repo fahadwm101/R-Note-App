@@ -5,11 +5,25 @@ import PageTour from './PageTour';
 
 const Pomodoro: React.FC = () => {
     const { t } = useLanguage();
-    const [timeLeft, setTimeLeft] = useState(25 * 60); // 25 minutes in seconds
+
+    // User customizable settings
+    const [workMin, setWorkMin] = useState(() => Number(localStorage.getItem('pomodoroWork')) || 25);
+    const [breakMin, setBreakMin] = useState(() => Number(localStorage.getItem('pomodoroBreak')) || 10);
+
+    const [timeLeft, setTimeLeft] = useState(workMin * 60);
     const [isActive, setIsActive] = useState(false);
     const [isBreak, setIsBreak] = useState(false);
     const [sessions, setSessions] = useState(0);
     const intervalRef = useRef<NodeJS.Timeout | null>(null);
+
+    // Sync timeLeft when durations change and timer is NOT active
+    useEffect(() => {
+        if (!isActive) {
+            setTimeLeft((isBreak ? breakMin : workMin) * 60);
+        }
+        localStorage.setItem('pomodoroWork', String(workMin));
+        localStorage.setItem('pomodoroBreak', String(breakMin));
+    }, [workMin, breakMin, isBreak, isActive]);
 
     useEffect(() => {
         if (isActive && timeLeft > 0) {
@@ -19,15 +33,18 @@ const Pomodoro: React.FC = () => {
         } else if (timeLeft === 0) {
             if (!isBreak) {
                 setIsBreak(true);
-                setTimeLeft(10 * 60); // 10 minute break
+                setTimeLeft(breakMin * 60);
                 setSessions(s => s + 1);
                 if ('Notification' in window && Notification.permission === 'granted') {
-                    new Notification(t('breakTimeNotification'), { body: t('takeTenMinuteBreak') });
+                    new Notification(t('breakTimeNotification'), { body: t('takeTenMinuteBreak') || `Take a ${breakMin} minute break.` });
                 }
             } else {
                 setIsBreak(false);
-                setTimeLeft(25 * 60); // Back to work
-                // Auto loop - don't stop the timer
+                setTimeLeft(workMin * 60);
+                // Notification for back to work
+                if ('Notification' in window && Notification.permission === 'granted') {
+                    new Notification(t('workTimeNotification'), { body: t('backToWork') });
+                }
             }
         } else {
             if (intervalRef.current) clearInterval(intervalRef.current);
@@ -36,7 +53,7 @@ const Pomodoro: React.FC = () => {
         return () => {
             if (intervalRef.current) clearInterval(intervalRef.current);
         };
-    }, [isActive, timeLeft, isBreak]);
+    }, [isActive, timeLeft, isBreak, workMin, breakMin, t]);
 
     const toggleTimer = () => {
         setIsActive(!isActive);
@@ -45,7 +62,7 @@ const Pomodoro: React.FC = () => {
     const resetTimer = () => {
         setIsActive(false);
         setIsBreak(false);
-        setTimeLeft(25 * 60);
+        setTimeLeft(workMin * 60);
     };
 
     const formatTime = (seconds: number) => {
@@ -54,7 +71,7 @@ const Pomodoro: React.FC = () => {
         return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
     };
 
-    const totalTime = isBreak ? 10 * 60 : 25 * 60;
+    const totalTime = (isBreak ? breakMin : workMin) * 60;
     const progress = (totalTime - timeLeft) / totalTime;
 
     return (
@@ -66,11 +83,36 @@ const Pomodoro: React.FC = () => {
                 features={t('tourPomodoroFeatures').split(',')}
             />
             <h1 className={`text-3xl font-bold mb-8 ${IS_RAMADAN ? 'text-gold-gradient' : 'text-gray-800 dark:text-white'}`}>{t('pomodoroTimer')}</h1>
-            <div className={`max-w-md mx-auto backdrop-blur-xl border border-slate-200 dark:border-white/10 shadow-sm dark:shadow-2xl rounded-[32px] p-8 text-center transition-colors duration-300 ${IS_RAMADAN ? 'card-royal' : 'bg-white dark:bg-slate-900/60'}`}>
+
+            <div className={`max-w-md w-full mx-auto backdrop-blur-xl border border-slate-200 dark:border-white/10 shadow-sm dark:shadow-2xl rounded-[32px] p-8 text-center transition-colors duration-300 ${IS_RAMADAN ? 'card-royal' : 'bg-white dark:bg-slate-900/60'}`}>
+
+                {/* Customization Inputs */}
+                <div className="grid grid-cols-2 gap-4 mb-6">
+                    <div>
+                        <label className="block text-xs font-bold text-slate-500 dark:text-gray-400 mb-2 uppercase">{t('workDuration')}</label>
+                        <input
+                            type="number"
+                            value={workMin}
+                            onChange={(e) => setWorkMin(Math.max(1, Number(e.target.value)))}
+                            className="w-full p-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-xl text-slate-900 dark:text-white text-center font-bold focus:ring-2 focus:ring-indigo-500 outline-none"
+                        />
+                    </div>
+                    <div>
+                        <label className="block text-xs font-bold text-slate-500 dark:text-gray-400 mb-2 uppercase">{t('breakDuration')}</label>
+                        <input
+                            type="number"
+                            value={breakMin}
+                            onChange={(e) => setBreakMin(Math.max(1, Number(e.target.value)))}
+                            className="w-full p-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-xl text-slate-900 dark:text-white text-center font-bold focus:ring-2 focus:ring-indigo-500 outline-none"
+                        />
+                    </div>
+                </div>
+
                 <div className="mb-6">
                     <label className="block text-sm font-bold text-slate-700 dark:text-gray-300 mb-2">{t('focusTask')}</label>
                     <input type="text" placeholder={t('whatAreYouWorkingOn')} className="w-full p-4 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-xl text-slate-900 dark:text-white placeholder-slate-400 focus:ring-2 focus:ring-indigo-500 outline-none transition-all" />
                 </div>
+
                 <div className="relative mb-8">
                     <svg className="w-64 h-64 mx-auto" viewBox="0 0 100 100">
                         <circle cx="50" cy="50" r="45" stroke="currentColor" strokeWidth="5" fill="none" className="text-slate-100 dark:text-white/5" />
@@ -81,15 +123,16 @@ const Pomodoro: React.FC = () => {
                         <span className="text-sm font-medium text-slate-500 dark:text-gray-400 mt-2 uppercase tracking-widest">{isBreak ? t('breakTime') : t('workTime')}</span>
                     </div>
                 </div>
+
                 <div className="text-sm text-slate-600 dark:text-gray-400 mb-8 flex items-center justify-center space-x-2 bg-slate-50 dark:bg-white/5 py-2 px-4 rounded-full inline-flex">
                     <span className="flex">{Array.from({ length: sessions }, (_, i) => <span key={i} className="text-lg">🍅</span>)}</span>
-                    <span className="font-medium">{sessions} {sessions === 1 ? t('session') : t('sessions')}</span>
+                    <span className="ms-2 font-medium">{sessions} {sessions === 1 ? t('session') : t('sessions')}</span>
                 </div>
 
                 <div className="flex justify-center space-x-4">
                     <button
                         onClick={toggleTimer}
-                        className={`font-bold py-4 px-10 rounded-2xl shadow-lg transition-all duration-300 transform hover:scale-[1.02] active:scale-[0.98] ${IS_RAMADAN ? 'bg-gradient-to-r from-emerald-600 to-emerald-800 hover:from-emerald-500 hover:to-emerald-700 text-white shadow-emerald-500/30' : 'bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white shadow-indigo-500/30'}`}
+                        className={`font-bold py-4 px-10 rounded-2xl shadow-lg transition-all duration-300 transform hover:scale-[1.02] active:scale-[0.98] ${IS_RAMADAN ? 'bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white shadow-amber-500/30' : 'bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white shadow-indigo-500/30'}`}
                     >
                         {isActive ? t('pause') : t('start')}
                     </button>

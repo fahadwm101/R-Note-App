@@ -114,7 +114,7 @@ const PublicScheduleView: React.FC = () => {
             <main className="flex-grow p-4 sm:p-8 relative z-10">
                 <div className="max-w-6xl mx-auto">
                     <div className="text-center mb-8">
-                        <h2 className="text-3xl font-bold text-white mb-2">{t('viewingScheduleOf')} Cheeta</h2>
+                        <h2 className="text-3xl font-bold text-white mb-2">{t('viewingScheduleOf')} {userId ? `@${userId.slice(0, 8)}` : t('aStudent') || 'a student'}</h2>
                         <p className="text-gray-400">{classes.length} {classes.length === 1 ? t('session') : t('sessions')}</p>
                     </div>
 

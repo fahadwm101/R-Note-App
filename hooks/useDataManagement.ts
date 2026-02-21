@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Class, Task, Quiz, Assignment, Note, Priority, SubmissionStatus, AnyItem } from '../types';
 import { db, auth } from '../src/lib/firebase';
-import { collection, onSnapshot, addDoc, deleteDoc, updateDoc, setDoc, doc, query, orderBy, Timestamp, where, serverTimestamp, writeBatch } from 'firebase/firestore';
+import { collection, onSnapshot, addDoc, deleteDoc, updateDoc, setDoc, doc, query, orderBy, Timestamp, where, serverTimestamp, writeBatch, getDoc, getDocs } from 'firebase/firestore';
 import { useAuth } from '../src/context/AuthContext';
 
 export const useDataManagement = (skipSubscription: boolean = false) => {
@@ -13,6 +13,7 @@ export const useDataManagement = (skipSubscription: boolean = false) => {
     const [notes, setNotes] = useState<Note[]>([]);
     const [streak, setStreak] = useState<number>(0);
     const [lastStudyDate, setLastStudyDate] = useState<string | null>(null);
+    const notifiedIds = useRef<Set<string>>(new Set());
 
     // Real-time Sync with Firestore
     useEffect(() => {
@@ -94,20 +95,18 @@ export const useDataManagement = (skipSubscription: boolean = false) => {
 
     const handleDelete = async (id: string, type: 'schedule' | 'tasks' | 'quizzes' | 'assignments' | 'notes') => {
         if (!user) return;
-        if (window.confirm('Are you sure you want to delete this item?')) {
-            try {
-                let collectionName = '';
-                switch (type) {
-                    case 'schedule': collectionName = 'classes'; break;
-                    case 'tasks': collectionName = 'tasks'; break;
-                    case 'quizzes': collectionName = 'quizzes'; break;
-                    case 'assignments': collectionName = 'assignments'; break;
-                    case 'notes': collectionName = 'notes'; break;
-                }
-                await deleteDoc(doc(db, collectionName, id));
-            } catch (error) {
-                console.error("Error deleting document: ", error);
+        try {
+            let collectionName = '';
+            switch (type) {
+                case 'schedule': collectionName = 'classes'; break;
+                case 'tasks': collectionName = 'tasks'; break;
+                case 'quizzes': collectionName = 'quizzes'; break;
+                case 'assignments': collectionName = 'assignments'; break;
+                case 'notes': collectionName = 'notes'; break;
             }
+            await deleteDoc(doc(db, collectionName, id));
+        } catch (error) {
+            console.error("Error deleting document: ", error);
         }
     };
 
@@ -120,7 +119,6 @@ export const useDataManagement = (skipSubscription: boolean = false) => {
             console.error('[DataManagement] handleSave failed: Check currentItem is null');
             return;
         }
-        console.log('handleSave called', { view, originalItem, currentItem });
 
         let collectionName = '';
         switch (view) {
@@ -138,7 +136,7 @@ export const useDataManagement = (skipSubscription: boolean = false) => {
                 const startUpdate = { ...currentItem };
                 delete (startUpdate as any).id;
                 await updateDoc(docRef, startUpdate);
-                console.log(`[DataManagement] Successfully updated document in ${collectionName} with ID: ${originalItem.id}`);
+
             } else { // Add
                 // Add timestamp and userId
                 const newItem: any = {
@@ -157,11 +155,11 @@ export const useDataManagement = (skipSubscription: boolean = false) => {
                     }
                 }
 
-                console.log(`[DataManagement] Attempting to add document to ${collectionName}:`, newItem);
+
 
                 try {
                     const docRef = await addDoc(collection(db, collectionName), newItem);
-                    console.log(`[DataManagement] Successfully added new document to ${collectionName} with ID: ${docRef.id}`);
+
                 } catch (innerError) {
                     console.error(`[DataManagement] CRITICAL ERROR adding to ${collectionName}:`, innerError);
                     throw innerError;
@@ -221,10 +219,26 @@ export const useDataManagement = (skipSubscription: boolean = false) => {
     };
 
     const clearAllData = async () => {
-        // Implementation for clearing all data from Firestore (optional, maybe dangerous to expose easily)
-        // For now, let's keep it empty or log a warning that this operation is not fully supported in this refactor
-        // or iterate and delete (expensive).
-        console.warn("Valid clearAllData requires iterating all collections. Not implemented for safety.");
+        if (!user) return;
+        const collections = ['classes', 'tasks', 'quizzes', 'assignments', 'notes'];
+        for (const col of collections) {
+            const q = query(collection(db, col), where('userId', '==', user.uid));
+            const snapshot = await getDocs(q);
+            let batch = writeBatch(db);
+            let count = 0;
+            for (const docSnap of snapshot.docs) {
+                batch.delete(docSnap.ref);
+                count++;
+                if (count >= 450) {
+                    await batch.commit();
+                    batch = writeBatch(db);
+                    count = 0;
+                }
+            }
+            if (count > 0) await batch.commit();
+        }
+        // Reset user stats
+        await setDoc(doc(db, 'user_stats', user.uid), { streak: 0, lastStudyDate: null }, { merge: true });
     };
 
     // Notifications for upcoming tasks, quizzes, and assignments
@@ -238,37 +252,32 @@ export const useDataManagement = (skipSubscription: boolean = false) => {
 
             // 1. Tasks (Due in 1 hour)
             tasks.forEach(task => {
-                if (!task.completed) {
+                if (!task.completed && task.id && !notifiedIds.current.has(task.id)) {
                     const dueDate = new Date(task.dueDate);
                     if (dueDate > now && dueDate <= oneHourLater) {
+                        notifiedIds.current.add(task.id);
                         new Notification('Upcoming Task', { body: `Task "${task.title}" is due soon!`, icon: '/logo.png' });
                     }
                 }
             });
 
-            // 2. Quizzes (Due in 24 hours) - More important, warn earlier
+            // 2. Quizzes (Due in 1 hour)
             quizzes.forEach(quiz => {
-                const quizDate = new Date(quiz.date);
-                // Check if it's tomorrow (roughly)
-                if (quizDate > now && quizDate <= twentyFourHoursLater) {
-                    // Simple check: alert if we haven't alerted today? 
-                    // For now, let's just alert if it's exactly 24 hours away is hard to catch with setInterval.
-                    // Instead, let's alert if it's within the window AND we are running this check.
-                    // To avoid spam, we'd need a "notified" state.
-                    // For MVP: Alert if it's within the next hour (urgent) OR exactly 1 day before (if you happen to be on).
-                    // Let's stick to "Due Soon" (1 hour range) for consistency, or maybe "Tomorrow" logic.
-                    // Let's go with 24 hours warning.
-                }
-                if (quizDate > now && quizDate <= oneHourLater) {
-                    new Notification('Upcoming Quiz', { body: `Quiz "${quiz.subject}" is starting soon!`, icon: '/logo.png' });
+                if (quiz.id && !notifiedIds.current.has(quiz.id)) {
+                    const quizDate = new Date(quiz.date);
+                    if (quizDate > now && quizDate <= oneHourLater) {
+                        notifiedIds.current.add(quiz.id);
+                        new Notification('Upcoming Quiz', { body: `Quiz "${quiz.subject}" is starting soon!`, icon: '/logo.png' });
+                    }
                 }
             });
 
-            // 3. Assignments (Due in 24 hours)
+            // 3. Assignments (Due in 1 hour)
             assignments.forEach(assignment => {
-                if (assignment.status !== 'Submitted') {
+                if (assignment.status !== 'Submitted' && assignment.id && !notifiedIds.current.has(assignment.id)) {
                     const dueDate = new Date(assignment.dueDate);
                     if (dueDate > now && dueDate <= oneHourLater) {
+                        notifiedIds.current.add(assignment.id);
                         new Notification('Assignment Due', { body: `Assignment "${assignment.title}" is due soon!`, icon: '/logo.png' });
                     }
                 }
@@ -284,10 +293,12 @@ export const useDataManagement = (skipSubscription: boolean = false) => {
     const getPublicNote = async (noteId: string): Promise<Note | null> => {
         try {
             const docRef = doc(db, 'notes', noteId);
-            const docSnap = await import('firebase/firestore').then(m => m.getDoc(docRef));
+            const docSnap = await getDoc(docRef);
 
             if (docSnap.exists()) {
-                return { ...docSnap.data(), id: docSnap.id } as Note;
+                const data = docSnap.data();
+                if (!data.isPublic) return null; // منع الوصول لو الملاحظة مش عامة
+                return { ...data, id: docSnap.id } as Note;
             } else {
                 return null;
             }
@@ -300,7 +311,7 @@ export const useDataManagement = (skipSubscription: boolean = false) => {
     const getPublicSchedule = async (userId: string): Promise<Class[]> => {
         try {
             const q = query(collection(db, 'classes'), where('userId', '==', userId));
-            const snapshot = await import('firebase/firestore').then(m => m.getDocs(q));
+            const snapshot = await getDocs(q);
             return snapshot.docs.map(doc => ({ ...doc.data(), id: doc.id } as Class));
         } catch (error) {
             console.error("Error fetching public schedule:", error);
@@ -359,6 +370,24 @@ export const useDataManagement = (skipSubscription: boolean = false) => {
         }
     };
 
+    const importSchedule = async (classesToImport: Class[]) => {
+        if (!user) throw new Error('User must be logged in to import schedule.');
+        let batch = writeBatch(db);
+        let count = 0;
+        for (const cls of classesToImport) {
+            const { id, userId, ...data } = cls as any;
+            const docRef = doc(collection(db, 'classes'));
+            batch.set(docRef, { ...data, userId: user.uid, createdAt: serverTimestamp() });
+            count++;
+            if (count >= 450) {
+                await batch.commit();
+                batch = writeBatch(db);
+                count = 0;
+            }
+        }
+        if (count > 0) await batch.commit();
+    };
+
     return {
         classes,
         tasks,
@@ -373,6 +402,7 @@ export const useDataManagement = (skipSubscription: boolean = false) => {
         clearAllData,
         getPublicNote,
         getPublicSchedule,
-        importData
+        importData,
+        importSchedule
     };
 };

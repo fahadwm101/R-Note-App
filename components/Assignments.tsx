@@ -1,15 +1,17 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Assignment, SubmissionStatus } from '../types';
 import { ICONS } from '../constants';
 import { useLanguage } from '../LanguageContext';
 import { IS_RAMADAN } from '../src/config/theme';
 import PageTour from './PageTour';
+import ConfirmDialog from './ui/ConfirmDialog';
 
 interface AssignmentsProps {
   assignments: Assignment[];
   onDelete: (id: string) => void;
   onEdit: (item?: Assignment) => void;
+  searchQuery?: string;
 }
 
 const StatusBadge: React.FC<{ status: SubmissionStatus }> = ({ status }) => {
@@ -24,8 +26,12 @@ const StatusBadge: React.FC<{ status: SubmissionStatus }> = ({ status }) => {
   );
 };
 
-const Assignments: React.FC<AssignmentsProps> = ({ assignments, onDelete, onEdit }) => {
+const Assignments: React.FC<AssignmentsProps> = ({ assignments, onDelete, onEdit, searchQuery = '' }) => {
   const { t } = useLanguage();
+  const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
+  const visibleAssignments = assignments.filter(a =>
+    !searchQuery || a.title.toLowerCase().includes(searchQuery.toLowerCase()) || a.subject.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   const getDueDateColor = (assignment: Assignment) => {
     if (assignment.status === SubmissionStatus.Submitted) return 'text-green-400';
@@ -35,6 +41,13 @@ const Assignments: React.FC<AssignmentsProps> = ({ assignments, onDelete, onEdit
   };
   return (
     <div className="p-4 sm:p-6 lg:p-8">
+      {deleteTarget && (
+        <ConfirmDialog
+          message={t('confirmDeleteAssignment') || 'Delete this assignment?'}
+          onConfirm={() => { onDelete(deleteTarget); setDeleteTarget(null); }}
+          onCancel={() => setDeleteTarget(null)}
+        />
+      )}
       <PageTour
         pageKey="assignments"
         title={t('tourAssignmentsTitle')}
@@ -42,15 +55,15 @@ const Assignments: React.FC<AssignmentsProps> = ({ assignments, onDelete, onEdit
         features={t('tourAssignmentsFeatures').split(',')}
       />
       <div className="flex justify-between items-center mb-6">
-        <h1 className={`text-3xl font-bold ${IS_RAMADAN ? 'text-gold-gradient' : 'text-gray-800 dark:text-white'}`}>{t('assignments')}</h1>
-        <button onClick={() => onEdit()} className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-md inline-flex items-center">
+        <h1 className={`text-2xl sm:text-3xl font-bold ${IS_RAMADAN ? 'text-gold-gradient' : 'text-gray-800 dark:text-white'}`}>{t('assignments')}</h1>
+        <button onClick={() => onEdit()} className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-xl inline-flex items-center justify-center transition-colors shadow-sm shadow-indigo-500/20 active:scale-95">
           {ICONS.plus}
           <span className="ms-2">{t('addAssignment')}</span>
         </button>
       </div>
       <div className="space-y-4">
-        {assignments.map(assignment => (
-          <div key={assignment.id} className={`backdrop-blur-xl border border-slate-200 dark:border-white/10 shadow-sm dark:shadow-2xl rounded-[32px] p-6 transition-colors duration-300 ${IS_RAMADAN ? 'card-royal' : 'bg-white dark:bg-slate-900/60'} ${assignment.status === SubmissionStatus.Submitted ? 'opacity-60 bg-slate-50 dark:bg-slate-900/40' : ''}`}>
+        {visibleAssignments.map(assignment => (
+          <div key={assignment.id} className={`backdrop-blur-xl border border-slate-200 dark:border-white/10 shadow-sm dark:shadow-2xl rounded-[24px] sm:rounded-[32px] p-4 sm:p-6 transition-colors duration-300 ${IS_RAMADAN ? 'card-royal' : 'bg-white dark:bg-slate-900/60'} ${assignment.status === SubmissionStatus.Submitted ? 'opacity-60 bg-slate-50 dark:bg-slate-900/40' : ''}`}>
             <div className="flex justify-between items-start">
               <div>
                 <h3 className="text-lg font-bold text-slate-800 dark:text-white">{assignment.title} <span className="mx-2 text-slate-300 dark:text-slate-600">|</span> <span className="text-base font-normal text-slate-500 dark:text-white/70">{assignment.subject}</span></h3>
@@ -76,7 +89,7 @@ const Assignments: React.FC<AssignmentsProps> = ({ assignments, onDelete, onEdit
                 </div>
                 <div className="flex space-x-4">
                   <button onClick={() => onEdit(assignment)} className="text-sm font-medium text-slate-400 hover:text-indigo-600 dark:text-gray-400 dark:hover:text-indigo-400 transition-colors">{t('edit')}</button>
-                  <button onClick={() => onDelete(assignment.id)} className="text-sm font-medium text-slate-400 hover:text-red-600 dark:text-gray-400 dark:hover:text-red-400 transition-colors">{t('delete')}</button>
+                  <button onClick={() => setDeleteTarget(assignment.id)} className="text-sm font-medium text-slate-400 hover:text-red-600 dark:text-gray-400 dark:hover:text-red-400 transition-colors">{t('delete')}</button>
                 </div>
               </div>
             </div>

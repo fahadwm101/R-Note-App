@@ -16,9 +16,9 @@ const RamadanDecor: React.FC = () => {
             {/* 🏮 Lantern + 🌙 Crescent - On top of content (z-50) */}
             <div className="fixed inset-0 pointer-events-none z-50 overflow-hidden">
                 {/* 🏮 Fanoos (Lantern) - Top Left - Swinging */}
-                <div className="absolute top-0 left-8 md:left-16 animate-swing origin-top">
-                    <div className="w-1 bg-slate-800 dark:bg-gold-500 h-24 mx-auto"></div>
-                    <svg width="60" height="100" viewBox="0 0 60 100" fill="none" xmlns="http://www.w3.org/2000/svg" className="drop-shadow-[0_0_15px_rgba(251,191,36,0.6)]">
+                <div className="absolute top-0 left-2 sm:left-4 md:left-6 animate-swing origin-top">
+                    <div className="w-0.5 sm:w-1 bg-slate-800 dark:bg-gold-500 h-10 sm:h-20 mx-auto"></div>
+                    <svg width="35" height="60" viewBox="0 0 60 100" fill="none" xmlns="http://www.w3.org/2000/svg" className="sm:w-[50px] sm:h-[85px] drop-shadow-[0_0_15px_rgba(251,191,36,0.6)]">
                         {/* Lantern Top */}
                         <path d="M30 0L45 15H15L30 0Z" className="fill-slate-800 dark:fill-gold-500" />
                         {/* Lantern Body */}

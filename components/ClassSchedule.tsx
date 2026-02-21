@@ -6,14 +6,7 @@ import { useLanguage } from '../LanguageContext';
 import { useAuth } from '../src/context/AuthContext';
 import { IS_RAMADAN } from '../src/config/theme';
 import PageTour from './PageTour';
-
-declare global {
-  interface Window {
-    jspdf: any;
-  }
-}
-declare const html2canvas: any;
-
+import ConfirmDialog from './ui/ConfirmDialog';
 
 
 interface ClassScheduleProps {
@@ -35,6 +28,8 @@ const ClassSchedule: React.FC<ClassScheduleProps> = ({ classes, tasks, quizzes, 
   const { user } = useAuth();
   const [currentTime, setCurrentTime] = useState(new Date());
   const [viewMode, setViewMode] = useState<'week' | 'month'>('week');
+  const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
+  const [shareToast, setShareToast] = useState(false);
 
   useEffect(() => {
     const interval = setInterval(() => setCurrentTime(new Date()), 60000);
@@ -46,35 +41,26 @@ const ClassSchedule: React.FC<ClassScheduleProps> = ({ classes, tasks, quizzes, 
   const todayName = new Date().toLocaleDateString('en-US', { weekday: 'long' });
   const todayIndex = originalDays.indexOf(todayName);
 
-  console.log('Classes received:', classes, 'Original days:', originalDays);
 
-  const handleExportPDF = () => {
-    const { jsPDF } = window.jspdf;
-    const scheduleElement = document.getElementById('schedule-grid');
-    if (scheduleElement) {
-      html2canvas(scheduleElement).then(canvas => {
-        const imgData = canvas.toDataURL('image/png');
-        // 'l' for landscape, 'mm' for units, 'a4' for paper size
-        const pdf = new jsPDF('l', 'mm', 'a4');
 
-        // Get landscape dimensions (A4 Landscape: 297mm x 210mm)
-        const pdfWidth = pdf.internal.pageSize.getWidth();
-        const pdfHeight = pdf.internal.pageSize.getHeight();
+  const handleExportPDF = () => window.print();
 
-        // Calculate dimensions to fit width while maintaining aspect ratio
-        const imgProps = pdf.getImageProperties(imgData);
-        const imgWidth = pdfWidth;
-        const imgHeight = (imgProps.height * imgWidth) / imgProps.width;
 
-        // Add image starting at 0,0
-        pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
-        pdf.save("class-schedule.pdf");
-      });
-    }
-  };
 
   return (
     <div className="p-4 sm:p-6 lg:p-8">
+      {deleteTarget && (
+        <ConfirmDialog
+          message={t('confirmDeleteClass') || 'Delete this class?'}
+          onConfirm={() => { onDelete(deleteTarget); setDeleteTarget(null); }}
+          onCancel={() => setDeleteTarget(null)}
+        />
+      )}
+      {shareToast && (
+        <div className="fixed top-5 right-5 z-50 bg-emerald-600 text-white px-4 py-2 rounded-xl shadow-lg">
+          {t('scheduleLinkCopied') || 'Link copied!'}
+        </div>
+      )}
       <PageTour
         pageKey="schedule"
         title={t('tourScheduleTitle')}
@@ -108,7 +94,8 @@ const ClassSchedule: React.FC<ClassScheduleProps> = ({ classes, tasks, quizzes, 
           <button onClick={() => {
             const url = `${window.location.origin}/share-schedule/${user?.uid}`;
             navigator.clipboard.writeText(url);
-            alert(t('scheduleLinkCopied'));
+            setShareToast(true);
+            setTimeout(() => setShareToast(false), 2500);
           }} className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 px-4 rounded-md inline-flex items-center me-2 shadow-lg shadow-emerald-500/20 transition-all">
             {ICONS.share}
             <span className="ms-2 hidden sm:inline">{t('shareSchedule')}</span>
@@ -122,8 +109,6 @@ const ClassSchedule: React.FC<ClassScheduleProps> = ({ classes, tasks, quizzes, 
           )}
 
           <button onClick={(e) => {
-            console.log('Add class button clicked', e);
-            // Call onEdit with undefined to indicate adding a new class
             onEdit(undefined);
           }} className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-md inline-flex items-center">
             {ICONS.plus}
@@ -192,11 +177,11 @@ const ClassSchedule: React.FC<ClassScheduleProps> = ({ classes, tasks, quizzes, 
                             <p className="text-xs opacity-90 truncate mt-0.5">{classItem.time}</p>
                             <p className="text-xs opacity-75 truncate mt-1">{classItem.instructor}</p>
                           </div>
-                          <div className="absolute top-2 end-2 flex space-x-1 opacity-0 group-hover:opacity-100 transition-opacity bg-white/20 backdrop-blur-md p-1 rounded-lg">
+                          <div className="absolute top-2 end-2 flex space-x-1 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity bg-white/20 backdrop-blur-md p-1 rounded-lg">
                             <button onClick={() => onEdit(classItem)} className="p-1 hover:text-indigo-200 text-white transition-colors">
                               <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.5L16.732 3.732z" /></svg>
                             </button>
-                            <button onClick={() => onDelete(classItem.id)} className="p-1 hover:text-red-200 text-white transition-colors">
+                            <button onClick={() => setDeleteTarget(classItem.id)} className="p-1 hover:text-red-200 text-white transition-colors">
                               <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
                             </button>
                           </div>

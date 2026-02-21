@@ -189,6 +189,13 @@ export const translations: Record<Language, Record<string, string>> = {
     // Ramadan
     ramadanKareem: 'Ramadan Kareem',
     greeting: 'Hello',
+    studyRecommendationDesc: 'Get personalized study recommendations based on your priorities',
+    saveName: 'Save Name',
+    saved: 'Saved ✓',
+    workDuration: 'Work Duration (min)',
+    breakDuration: 'Break Duration (min)',
+    joinCommunity: 'Join R.I.S.E Community',
+    community: 'Community',
   },
   ar: {
     rNote: 'R.NOTE',
@@ -379,5 +386,12 @@ export const translations: Record<Language, Record<string, string>> = {
     // Ramadan
     ramadanKareem: 'رمضان كريم',
     greeting: 'مرحباً',
+    studyRecommendationDesc: 'احصل على توصيات دراسية مخصصة بناءً على أولوياتك',
+    saveName: 'حفظ الاسم',
+    saved: 'تم الحفظ ✓',
+    workDuration: 'مدة العمل (دقيقة)',
+    breakDuration: 'مدة الاستراحة (دقيقة)',
+    joinCommunity: 'انظم لمجتمع R.I.S.E',
+    community: 'المجتمع',
   },
 };

@@ -58,6 +58,7 @@ export interface Note {
   content: string;
   lastUpdated: string;
   createdAt?: string;
+  isPublic?: boolean;
 }
 
 export interface ChatMessage {

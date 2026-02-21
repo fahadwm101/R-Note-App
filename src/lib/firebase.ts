@@ -1,6 +1,6 @@
 import { initializeApp } from 'firebase/app';
 import { getAuth, GoogleAuthProvider } from 'firebase/auth';
-import { getFirestore } from 'firebase/firestore';
+import { getFirestore, enableIndexedDbPersistence } from 'firebase/firestore';
 
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
@@ -15,6 +15,15 @@ const app = initializeApp(firebaseConfig);
 
 export const auth = getAuth(app);
 export const googleProvider = new GoogleAuthProvider();
-
-// unexpected 'blocked by client' errors can be caused by persistent cache
 export const db = getFirestore(app);
+
+// Enable offline persistence (data available even without internet)
+enableIndexedDbPersistence(db).catch(err => {
+  if (err.code === 'failed-precondition') {
+    // Multiple tabs open — persistence only works in one tab at a time
+    console.warn('Offline persistence disabled: multiple tabs open.');
+  } else if (err.code === 'unimplemented') {
+    // Browser doesn't support persistence
+    console.warn('Offline persistence not supported in this browser.');
+  }
+});

@@ -1,5 +1,5 @@
 
-import React, { useEffect, useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { Task, Quiz, Note, Assignment, Priority, ModalContent } from '../types';
 import { ICONS } from '../constants';
@@ -18,12 +18,11 @@ interface DashboardProps {
     openModal: (view: ModalContent['view']) => void;
 }
 
-const today = new Date().toISOString().split('T')[0];
 
 
 const PriorityBadge: React.FC<{ priority: Priority }> = ({ priority }) => {
     const colorClasses = {
-        [Priority.High]: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300',
+        [Priority.High]: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300',
         [Priority.Medium]: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300',
         [Priority.Low]: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300',
     };
@@ -38,40 +37,19 @@ const Dashboard: React.FC<DashboardProps> = ({ tasks = [], quizzes = [], notes =
     const { t, language } = useLanguage();
     const [showSuggestion, setShowSuggestion] = useState(false);
 
-    useEffect(() => {
-        const upcomingQuizzes = (quizzes || []).filter(q => {
-            if (!q.date) return false;
-            const quizDate = new Date(q.date);
-            if (isNaN(quizDate.getTime())) return false;
+    const today = useMemo(() => new Date().toISOString().split('T')[0], []);
 
-            const tomorrow = new Date();
-            tomorrow.setDate(tomorrow.getDate() + 1);
-            const twoDaysFromNow = new Date();
-            twoDaysFromNow.setDate(twoDaysFromNow.getDate() + 2);
-
-            return quizDate > tomorrow && quizDate < twoDaysFromNow;
-        });
-
-        // Removed alert for upcoming quizzes
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [quizzes]);
-
-    const getSmartSuggestion = () => {
-        const incompleteTasks = (tasks || []).filter(task => !task.completed);
-        const sortedTasks = incompleteTasks.sort((a, b) => {
-            // Priority: High > Medium > Low
-            const priorityOrder = { High: 3, Medium: 2, Low: 1 };
-            const priorityDiff = priorityOrder[b.priority] - priorityOrder[a.priority];
+    const suggestedTask = useMemo(() => {
+        const incompleteTasks = tasks.filter(task => !task.completed);
+        return incompleteTasks.sort((a, b) => {
+            const priorityOrder: Record<string, number> = { High: 3, Medium: 2, Low: 1 };
+            const priorityDiff = (priorityOrder[b.priority] ?? 0) - (priorityOrder[a.priority] ?? 0);
             if (priorityDiff !== 0) return priorityDiff;
-            // Then by due date
             const dateA = a.dueDate ? new Date(a.dueDate).getTime() : 0;
             const dateB = b.dueDate ? new Date(b.dueDate).getTime() : 0;
             return dateA - dateB;
-        });
-        return sortedTasks[0];
-    };
-
-    const suggestedTask = getSmartSuggestion();
+        })[0];
+    }, [tasks]);
 
     const todaysTasks = (tasks || []).filter(task => task.dueDate === today && !task.completed);
     const upcomingQuizzes = (quizzes || []).filter(quiz => {
@@ -102,7 +80,7 @@ const Dashboard: React.FC<DashboardProps> = ({ tasks = [], quizzes = [], notes =
             />
             {/* Main 2-Column Layout */}
             {/* Main 2-Column Layout */}
-            <div className="grid grid-cols-1 lg:grid-cols-7 gap-8">
+            <div className="grid grid-cols-1 lg:grid-cols-7 gap-6 lg:gap-8">
                 <style>{`
                 .ramadan-card-border {
                     border-color: ${IS_RAMADAN ? 'rgba(234, 179, 8, 0.3)' : ''} !important;
@@ -111,22 +89,22 @@ const Dashboard: React.FC<DashboardProps> = ({ tasks = [], quizzes = [], notes =
                     box-shadow: ${IS_RAMADAN ? '0 4px 6px -1px rgba(234, 179, 8, 0.1), 0 2px 4px -1px rgba(234, 179, 8, 0.06)' : ''} !important;
                 }
                 `}</style>
-                {/* Left Column - Main Content (70% width) */}
+                {/* Left Column - Main Content (Full width on md, 70% on lg) */}
                 <div className="lg:col-span-5 space-y-8">
                     {/* Hero CTA Section */}
-                    <div className={`bg-gradient-to-r from-slate-900 via-purple-900 to-slate-900 backdrop-blur-xl border border-purple-500/30 rounded-2xl shadow-[0_0_30px_rgba(147,51,234,0.2)] p-8 text-center ${IS_RAMADAN ? 'shadow-[0_0_30px_rgba(245,158,11,0.15)] border-amber-500/30' : ''}`}>
-                        <h2 className="text-3xl font-bold text-white mb-4 flex items-center justify-center gap-2">{ICONS.target} {t('whatShouldIStudyNow')}</h2>
-                        <p className="text-white/80 mb-6">Get personalized study recommendations based on your priorities</p>
+                    <div className={`bg-gradient-to-r from-slate-900 via-purple-900 to-slate-900 backdrop-blur-xl border border-purple-500/30 rounded-2xl shadow-[0_0_30px_rgba(147,51,234,0.2)] p-6 sm:p-8 text-center ${IS_RAMADAN ? 'shadow-[0_0_30px_rgba(245,158,11,0.15)] border-amber-500/30' : ''}`}>
+                        <h2 className="text-2xl sm:text-3xl font-bold text-white mb-4 flex items-center justify-center gap-2">{ICONS.target} {t('whatShouldIStudyNow')}</h2>
+                        <p className="text-white/80 mb-6 text-sm sm:text-base">{t('studyRecommendationDesc') || 'Get personalized study recommendations based on your priorities'}</p>
                         <button
                             onClick={() => setShowSuggestion(true)}
-                            className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 px-8 rounded-xl text-lg shadow-lg shadow-blue-500/50 transition-all duration-200 transform hover:scale-105"
+                            className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 sm:py-4 px-6 sm:px-8 rounded-xl text-base sm:text-lg shadow-lg shadow-blue-500/50 transition-all duration-200 transform hover:scale-105"
                         >
                             {ICONS.rocket} {t('whatShouldIStudyNow')}
                         </button>
                     </div>
 
                     {/* Main Cards Grid */}
-                    <div className="lg:col-span-7 grid grid-cols-1 md:grid-cols-3 gap-6 w-full">
+                    <div className="lg:col-span-7 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-6 w-full">
                         {/* Today's Tasks */}
                         <div className={`card-royal rounded-2xl p-6 flex flex-col h-full group transition-all duration-300 hover:shadow-2xl hover:border-amber-500/40`}>
                             <div className="flex items-center justify-between mb-4">

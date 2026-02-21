@@ -52,10 +52,21 @@ const AppContent: React.FC = () => {
 
     const { classes, tasks, quizzes, assignments, notes, streak, handleDelete, handleSave: saveData, handleToggleTask, handleNoteUpdate, clearAllData } = useDataManagement();
 
+    // Search State
+    const [searchQuery, setSearchQuery] = useState('');
+
     // Modal State
     const [modalContent, setModalContent] = useState<ModalContent>(null);
     const [currentItem, setCurrentItem] = useState<Partial<AnyItem> | null>(null);
     const [isSaving, setIsSaving] = useState(false);
+
+    // Toast State
+    const [toast, setToast] = useState<{ msg: string; error: boolean } | null>(null);
+    useEffect(() => {
+        if (!toast) return;
+        const timer = setTimeout(() => setToast(null), toast.error ? 5000 : 1500);
+        return () => clearTimeout(timer);
+    }, [toast]);
 
     useEffect(() => {
         document.documentElement.classList.add('dark');
@@ -93,27 +104,13 @@ const AppContent: React.FC = () => {
     }
 
     const handleSave = async () => {
-        // Show visible alert
-        const alert = document.createElement('div');
-        alert.textContent = 'Saving...';
-        alert.style.position = 'fixed';
-        alert.style.top = '20px';
-        alert.style.right = '20px';
-        alert.style.background = '#059669';
-        alert.style.color = 'white';
-        alert.style.padding = '12px 20px';
-        alert.style.borderRadius = '8px';
-        alert.style.zIndex = '10000';
-        alert.style.fontWeight = 'bold';
-        document.body.appendChild(alert);
+        setToast({ msg: 'Saving...', error: false });
 
         if (!modalContent || !currentItem) {
             if (process.env.NODE_ENV !== 'production') {
                 console.error('Validation failed: missing modalContent or currentItem');
             }
-            alert.textContent = 'Error: Missing data';
-            alert.style.background = '#dc2626';
-            setTimeout(() => alert.remove(), 3000);
+            setToast({ msg: 'Error: Missing data', error: true });
             return;
         }
 
@@ -122,18 +119,13 @@ const AppContent: React.FC = () => {
             const { view, item: originalItem } = modalContent;
             await saveData(view, originalItem, currentItem);
 
-            alert.textContent = 'Saved successfully!';
-            setTimeout(() => {
-                alert.remove();
-                closeModal();
-            }, 1500);
+            setToast({ msg: 'Saved successfully!', error: false });
+            setTimeout(() => closeModal(), 1500);
         } catch (error: any) {
             if (process.env.NODE_ENV !== 'production') {
                 console.error('Failed to save item:', error);
             }
-            alert.textContent = `Error: ${error.message || 'Unknown error'}`;
-            alert.style.background = '#dc2626';
-            setTimeout(() => alert.remove(), 5000);
+            setToast({ msg: `Error: ${error.message || 'Unknown error'}`, error: true });
         } finally {
             setIsSaving(false);
         }
@@ -186,7 +178,22 @@ const AppContent: React.FC = () => {
             case 'notes':
                 return (
                     <div>
-                        {commonFields}
+                        <div>
+                            <label className="block text-sm font-medium text-slate-700 dark:text-gray-300 mb-1">{t('subject')}</label>
+                            <input
+                                name="subject"
+                                list="note-subjects"
+                                value={(currentItem as Note).subject || ''}
+                                onChange={handleFormChange}
+                                placeholder={t('subject')}
+                                className="w-full px-3 py-2 rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-600 text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/50"
+                            />
+                            <datalist id="note-subjects">
+                                {[...new Set(notes.map(n => n.subject).filter(Boolean))].map(s => (
+                                    <option key={s} value={s} />
+                                ))}
+                            </datalist>
+                        </div>
                         <FormField label={t('title')} name="title" type="text" value={(currentItem as Note).title || ''} onChange={handleFormChange} required />
                         <FormField label={t('content')} name="content" type="textarea" value={(currentItem as Note).content || ''} onChange={handleFormChange} rows={5} />
                     </div>
@@ -243,6 +250,12 @@ const AppContent: React.FC = () => {
 
     return (
         <div className="flex h-screen text-gray-900 dark:text-gray-100 relative overflow-hidden bg-gray-50 dark:bg-slate-950 transition-colors duration-300">
+            {/* Toast Notification */}
+            {toast && (
+                <div style={{ position: 'fixed', top: '20px', right: '20px', background: toast.error ? '#dc2626' : '#059669', color: 'white', padding: '12px 20px', borderRadius: '8px', zIndex: 10000, fontWeight: 'bold' }}>
+                    {toast.msg}
+                </div>
+            )}
             <RamadanDecor />
             <PWAInstallPrompt />
             {/* 🌊 Organic Liquid Background - Visible only in Dark Mode */}
@@ -271,16 +284,16 @@ const AppContent: React.FC = () => {
             <div className="relative z-10 flex w-full">
                 <Sidebar isOpen={isSidebarOpen} />
                 <div className="flex-1 flex flex-col overflow-hidden">
-                    <Header toggleSidebar={() => setSidebarOpen(!isSidebarOpen)} />
+                    <Header toggleSidebar={() => setSidebarOpen(!isSidebarOpen)} onSearch={setSearchQuery} searchQuery={searchQuery} />
                     <main className="flex-1 overflow-x-hidden overflow-y-auto m-2 sm:m-4">
                         <Routes>
                             <Route path="/" element={<Navigate to="/dashboard" replace />} />
                             <Route path="/dashboard" element={<Dashboard tasks={tasks} quizzes={quizzes} notes={notes} assignments={assignments} streak={streak} openModal={openModal} />} />
                             <Route path="/schedule" element={<ClassSchedule classes={classes} tasks={tasks} quizzes={quizzes} assignments={assignments} onDelete={(id) => handleDelete(id, 'schedule')} onEdit={(item) => openModal('schedule', item)} />} />
-                            <Route path="/tasks" element={<Tasks tasks={tasks} onToggleComplete={handleToggleTask} onDelete={(id) => handleDelete(id, 'tasks')} onEdit={(item) => openModal('tasks', item)} />} />
-                            <Route path="/quizzes" element={<Quizzes quizzes={quizzes} onDelete={(id) => handleDelete(id, 'quizzes')} onEdit={(item) => openModal('quizzes', item)} />} />
-                            <Route path="/assignments" element={<Assignments assignments={assignments} onDelete={(id) => handleDelete(id, 'assignments')} onEdit={(item) => openModal('assignments', item)} />} />
-                            <Route path="/notes" element={<Notes notes={notes} onAdd={() => openModal('notes')} onUpdate={handleNoteUpdate} onDelete={(id) => handleDelete(id, 'notes')} />} />
+                            <Route path="/tasks" element={<Tasks tasks={tasks} onToggleComplete={handleToggleTask} onDelete={(id) => handleDelete(id, 'tasks')} onEdit={(item) => openModal('tasks', item)} searchQuery={searchQuery} />} />
+                            <Route path="/quizzes" element={<Quizzes quizzes={quizzes} onDelete={(id) => handleDelete(id, 'quizzes')} onEdit={(item) => openModal('quizzes', item)} searchQuery={searchQuery} />} />
+                            <Route path="/assignments" element={<Assignments assignments={assignments} onDelete={(id) => handleDelete(id, 'assignments')} onEdit={(item) => openModal('assignments', item)} searchQuery={searchQuery} />} />
+                            <Route path="/notes" element={<Notes notes={notes} onAdd={() => openModal('notes')} onUpdate={handleNoteUpdate} onDelete={(id) => handleDelete(id, 'notes')} searchQuery={searchQuery} />} />
                             <Route path="/pomodoro" element={<Pomodoro />} />
 
                             <Route path="/analytics" element={<Analytics tasks={tasks} quizzes={quizzes} assignments={assignments} classes={classes} streak={streak} />} />
