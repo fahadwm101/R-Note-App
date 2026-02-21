@@ -1,71 +1,17 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React from 'react';
 import { ICONS } from '../constants';
 import { sendNotification } from '../src/utils/notifications';
 import { useLanguage } from '../LanguageContext';
 import { IS_RAMADAN } from '../src/config/theme';
 import PageTour from './PageTour';
+import { usePomodoro } from '../context/PomodoroContext';
 
 const Pomodoro: React.FC = () => {
     const { t } = useLanguage();
-
-    // User customizable settings
-    const [workMin, setWorkMin] = useState(() => Number(localStorage.getItem('pomodoroWork')) || 25);
-    const [breakMin, setBreakMin] = useState(() => Number(localStorage.getItem('pomodoroBreak')) || 10);
-
-    const [timeLeft, setTimeLeft] = useState(workMin * 60);
-    const [isActive, setIsActive] = useState(false);
-    const [isBreak, setIsBreak] = useState(false);
-    const [sessions, setSessions] = useState(0);
-    const intervalRef = useRef<NodeJS.Timeout | null>(null);
-
-    // Sync timeLeft when durations change and timer is NOT active
-    useEffect(() => {
-        if (!isActive) {
-            setTimeLeft((isBreak ? breakMin : workMin) * 60);
-        }
-        localStorage.setItem('pomodoroWork', String(workMin));
-        localStorage.setItem('pomodoroBreak', String(breakMin));
-    }, [workMin, breakMin, isBreak, isActive]);
-
-    useEffect(() => {
-        if (isActive && timeLeft > 0) {
-            intervalRef.current = setInterval(() => {
-                setTimeLeft(time => time - 1);
-            }, 1000);
-        } else if (timeLeft === 0) {
-            if (!isBreak) {
-                setIsBreak(true);
-                setTimeLeft(breakMin * 60);
-                setSessions(s => s + 1);
-                if ('Notification' in window && Notification.permission === 'granted') {
-                    sendNotification(t('breakTimeNotification'), { body: t('takeTenMinuteBreak') || `Take a ${breakMin} minute break.` });
-                }
-            } else {
-                setIsBreak(false);
-                setTimeLeft(workMin * 60);
-                // Notification for back to work
-                if ('Notification' in window && Notification.permission === 'granted') {
-                    sendNotification(t('workTimeNotification'), { body: t('backToWork') });
-                }
-            }
-        } else {
-            if (intervalRef.current) clearInterval(intervalRef.current);
-        }
-
-        return () => {
-            if (intervalRef.current) clearInterval(intervalRef.current);
-        };
-    }, [isActive, timeLeft, isBreak, workMin, breakMin, t]);
-
-    const toggleTimer = () => {
-        setIsActive(!isActive);
-    };
-
-    const resetTimer = () => {
-        setIsActive(false);
-        setIsBreak(false);
-        setTimeLeft(workMin * 60);
-    };
+    const {
+        workMin, breakMin, timeLeft, isActive, isBreak, sessions,
+        setWorkMin, setBreakMin, toggleTimer, resetTimer
+    } = usePomodoro();
 
     const formatTime = (seconds: number) => {
         const mins = Math.floor(seconds / 60);

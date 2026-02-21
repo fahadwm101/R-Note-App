@@ -26,6 +26,7 @@ import { useLanguage } from './LanguageContext';
 import { useDataManagement } from './hooks/useDataManagement';
 import { AuthProvider, useAuth } from './src/context/AuthContext';
 import { ThemeProvider } from './context/ThemeContext';
+import { PomodoroProvider } from './context/PomodoroContext';
 import OfflineIndicator from './components/OfflineIndicator';
 import PWAInstallPrompt from './components/PWAInstallPrompt';
 
@@ -35,7 +36,9 @@ const App: React.FC = () => {
     return (
         <AuthProvider>
             <ThemeProvider>
-                <AppContent />
+                <PomodoroProvider>
+                    <AppContent />
+                </PomodoroProvider>
             </ThemeProvider>
         </AuthProvider>
     );
